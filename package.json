@@ -1,0 +1,21 @@
+{
+  "name": "multi-vendor-marketplace",
+  "version": "1.0.0",
+  "description": "Full-stack multi-vendor e-commerce marketplace platform",
+  "private": true,
+  "scripts": {
+    "install:server": "npm --prefix server install",
+    "install:client": "npm --prefix client install",
+    "install:all": "npm --prefix server install && npm --prefix client install",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "test:server": "npm --prefix server test"
+  },
+  "keywords": [
+    "multi-vendor",
+    "marketplace",
+    "ecommerce"
+  ],
+  "author": "",
+  "license": "ISC"
+}
