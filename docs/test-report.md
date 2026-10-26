@@ -30,3 +30,12 @@
   - `Payment`: Currency default (INR), commission ledger breakdown, transfer structures.
   - `Review`: Rating constraints (1-5), verified order link, unique constraint per customer/product.
   - `Coupon`: Subtotal minimum check, active status check, and expiry evaluation.
+
+### Step 1: API Endpoint Plan & Contract Verification
+- **Test File**: `server/test/routes.test.js`
+- **Runner**: Vitest v3.2.7 + Supertest v7.0.0
+- **Results**: 11 / 11 tests passed (100%)
+  - Healthcheck (`/health`) returns standard uptime payload.
+  - Discovery (`/api`) and documentation catalogue (`/api/docs`) expose all modules and routes.
+  - Auth, products, cart, multi-vendor orders, payments, admin analytics, and uploads endpoints adhere to standard response envelopes.
+  - 404 handler returns formatted error envelope for unregistered routes.
