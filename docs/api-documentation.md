@@ -553,7 +553,9 @@ User account management & role inspection.
 
 ---
 
-## 3. Role-Based Access Control (RBAC) Matrix
+## 3. Role-Based Access Control (RBAC) & Authorization Rules
+
+### 3.1 Permission Matrix
 
 | Resource / Endpoint | Public | Customer | Vendor | Admin |
 | :--- | :---: | :---: | :---: | :---: |
@@ -572,3 +574,31 @@ User account management & role inspection.
 | `GET /api/orders/vendor/items` | ❌ | ❌ | ✅ (Own Items) | ✅ |
 | `PATCH /api/orders/vendor/.../status` | ❌ | ❌ | ✅ (Own Items) | ✅ (Override) |
 | `GET /api/admin/*` (Analytics, Approvals) | ❌ | ❌ | ❌ | ✅ |
+
+---
+
+### 3.2 Authorization & Resource Ownership Rules
+
+Backend enforcement is strictly required across all API endpoints. Frontend route guards only control presentation and must never be considered security boundaries.
+
+1. **Customer Ownership**:
+   - Customers may only access and manipulate their own cart (`cart:user:<userId>`), profile, and order history (`orders` where `customerId === req.user.id`).
+   - Customers can only review products that exist in their completed, paid orders.
+   - Customers cannot access vendor dashboards, create products, or view administrative data.
+
+2. **Vendor Ownership & Multi-Vendor Order Isolation**:
+   - A vendor may only view and update their own store details and product catalog (`products` where `vendorId === req.user.id`).
+   - When an order contains products from multiple stores, a vendor may only inspect and update fulfillment statuses (`placed` → `packed` → `shipped` → `delivered`) for their **own items**. Attempting to modify another vendor's item status is blocked with `403 Forbidden`.
+   - Vendors cannot access administrative management endpoints or other vendors' financial metrics.
+
+3. **Admin Authority**:
+   - Admins possess comprehensive administrative authorization: approving/rejecting vendor applications, setting platform commissions, overriding disputed order statuses, and monitoring platform analytics.
+
+4. **Public Visitors**:
+   - Public visitors may browse active products and approved store catalogs, view published reviews, and register/login.
+   - All write operations, cart actions, checkout, and account operations require authenticated tokens.
+
+5. **Implementation in Code**:
+   - Authentication middleware: [`server/src/middleware/authenticate.js`](file:///d:/Github/Multi-Vender%20Ecom%20MarketPlace/server/src/middleware/authenticate.js)
+   - Role & ownership middleware: [`server/src/middleware/authorize.js`](file:///d:/Github/Multi-Vender%20Ecom%20MarketPlace/server/src/middleware/authorize.js)
+   - Ownership helper: `verifyOrderItemOwnership(order, itemId, user)` prevents cross-vendor fulfillment mutations.

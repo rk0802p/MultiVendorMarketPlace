@@ -39,3 +39,14 @@
   - Discovery (`/api`) and documentation catalogue (`/api/docs`) expose all modules and routes.
   - Auth, products, cart, multi-vendor orders, payments, admin analytics, and uploads endpoints adhere to standard response envelopes.
   - 404 handler returns formatted error envelope for unregistered routes.
+
+### Step 1: Authorization & RBAC Middleware Verification
+- **Test File**: `server/test/authorization.test.js`
+- **Runner**: Vitest v3.2.7
+- **Results**: 12 / 12 tests passed (100%)
+  - Unauthenticated requests rejected with `401 Unauthorized`.
+  - Valid JWT accepted and parsed into `req.user`.
+  - Suspended account rejected with `403 Forbidden`.
+  - Role-based guards block customers from admin APIs and vendors from customer-only actions.
+  - Resource ownership checks prevent cross-user resource mutations while granting admin override.
+  - Multi-vendor isolation check prevents a vendor from updating line items owned by another vendor.

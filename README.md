@@ -84,7 +84,7 @@ At checkout:
 ## 4. Execution Roadmap
 
 - [x] **Pre-Step 1**: Repository initialization, folder structure scaffolding, baseline configuration, environment templates, docs skeleton.
-- [ ] **Step 1**: Technical planning, database schema modeling, API contract specification, and role/permission matrix.
+- [x] **Step 1**: Technical planning, database schema modeling, API contract specification, and role/permission matrix.
 - [ ] **Step 2**: Authentication module (JWT, bcrypt, HttpOnly cookies) and RBAC middleware.
 - [ ] **Step 3**: Vendor onboarding & approval workflows; Product CRUD & AWS S3 presigned uploads.
 - [ ] **Step 4**: Elasticsearch indexing, full-text search, multi-faceted filtering, and sorting.
