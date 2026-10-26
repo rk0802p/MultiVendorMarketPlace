@@ -156,3 +156,18 @@ Promotional codes and discounts.
   }
   ```
 - **Rule**: Product prices and inventory are always freshly read and validated against MongoDB on cart retrieval and checkout.
+
+---
+
+## 4. Model Indexes & Logic Guarantees
+
+| Collection | Indexes | Critical Logic Guarantees |
+| :--- | :--- | :--- |
+| **Users** | `email: 1` (unique) | Passwords hashed with `bcrypt` (10 rounds); `passwordHash` omitted from JSON responses by default. |
+| **Stores** | `ownerId: 1` (unique), `slug: 1` (unique), `approvalStatus: 1` | One approved store per vendor account; only approved vendors can publish products. |
+| **Products** | `slug: 1` (unique), `{ status: 1, category: 1, price: 1 }`, `{ storeId: 1, status: 1 }` | Compound indexes optimize multi-faceted filtering and catalog queries. |
+| **Orders** | `orderNumber: 1` (unique), `customerId: 1`, `items.storeId: 1`, `items.vendorId: 1` | Line items snapshot product title, price, and vendor at purchase time. Individual item fulfillment states derive overall order status. |
+| **Payments** | `orderId: 1` (unique), `providerOrderId: 1`, `providerPaymentId: 1` | Immutable commission calculation recorded at checkout. Idempotent webhook event ledger. |
+| **Reviews** | `{ customerId: 1, productId: 1 }` (unique), `orderId: 1` | Compound unique index ensures 1 verified review per customer per purchased product. Requires valid order reference. |
+| **Coupons** | `code: 1` (unique), `expiry: 1`, `isActive: 1` | Evaluates expiration, usage limits, and minimum cart subtotal. |
+

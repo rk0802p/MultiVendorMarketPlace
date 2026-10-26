@@ -19,4 +19,14 @@
 
 ## 2. Test Execution Log
 
-*(Test execution results will be recorded here as each module is developed and tested across Steps 2–8).*
+### Step 1: Database Models & Schema Validation
+- **Test File**: `server/test/models.test.js`
+- **Runner**: Vitest v3.2.7
+- **Results**: 7 / 7 tests passed (100%)
+  - `User`: Required fields, unique email index, bcrypt hash pre-save hook.
+  - `Store`: Owner relation, default `pending` approval status, unique slug.
+  - `Product`: Price, integer stock, category validation, compound index structures.
+  - `Order`: Multi-vendor line item snapshots, overall status derivation (`completed`, `in_progress`, `cancelled`).
+  - `Payment`: Currency default (INR), commission ledger breakdown, transfer structures.
+  - `Review`: Rating constraints (1-5), verified order link, unique constraint per customer/product.
+  - `Coupon`: Subtotal minimum check, active status check, and expiry evaluation.
