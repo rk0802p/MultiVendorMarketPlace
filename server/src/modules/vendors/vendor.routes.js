@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { ApiResponse } from '../../utils/apiResponse.js';
+import { authenticate } from '../../middleware/authenticate.js';
+import { requireRole } from '../../middleware/authorize.js';
 
 const router = Router();
 
@@ -8,10 +10,10 @@ const router = Router();
  * @desc    Apply to become a marketplace vendor
  * @access  Private (Customer)
  */
-router.post('/apply', (req, res) => {
+router.post('/apply', authenticate, requireRole('customer'), (req, res) => {
   return ApiResponse.success(res, {
     statusCode: 201,
-    message: 'Vendor application submitted for review (Contract Defined)',
+    message: 'Vendor application submitted for review',
     data: {
       store: {
         id: 'mock_store_id',
@@ -26,11 +28,11 @@ router.post('/apply', (req, res) => {
 /**
  * @route   GET /api/vendors/me
  * @desc    Get authenticated vendor's store details
- * @access  Private (Vendor)
+ * @access  Private (Vendor / Admin)
  */
-router.get('/me', (req, res) => {
+router.get('/me', authenticate, requireRole('vendor', 'admin'), (req, res) => {
   return ApiResponse.success(res, {
-    message: 'Vendor store profile retrieved (Contract Defined)',
+    message: 'Vendor store profile retrieved',
     data: {
       store: {
         id: 'mock_store_id',
@@ -45,11 +47,11 @@ router.get('/me', (req, res) => {
 /**
  * @route   PATCH /api/vendors/me
  * @desc    Update authenticated vendor's store profile
- * @access  Private (Vendor)
+ * @access  Private (Vendor / Admin)
  */
-router.patch('/me', (req, res) => {
+router.patch('/me', authenticate, requireRole('vendor', 'admin'), (req, res) => {
   return ApiResponse.success(res, {
-    message: 'Store profile updated successfully (Contract Defined)',
+    message: 'Store profile updated successfully',
     data: {
       store: {
         id: 'mock_store_id',

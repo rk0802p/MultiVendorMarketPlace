@@ -1,8 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import request from 'supertest';
+import jwt from 'jsonwebtoken';
 import app from '../src/app.js';
+import { AuthService } from '../src/modules/auth/auth.service.js';
+import { config } from '../src/config/environment.js';
 
 describe('API Route Inventory & Contract Verification', () => {
+  const adminToken = jwt.sign(
+    { id: 'admin_test_1', role: 'admin', status: 'active' },
+    config.jwt.secret
+  );
+
   it('GET /health should return 200 and healthy status', async () => {
     const res = await request(app).get('/health');
     expect(res.status).toBe(200);
@@ -27,9 +35,21 @@ describe('API Route Inventory & Contract Verification', () => {
   });
 
   it('POST /api/auth/register should respond with 201 created envelope', async () => {
+    vi.spyOn(AuthService, 'register').mockResolvedValueOnce({
+      user: {
+        id: 'mock_user_id',
+        name: 'Test User',
+        email: 'test@example.com',
+        role: 'customer',
+        status: 'active',
+      },
+      token: 'mock_jwt_token',
+    });
+
     const res = await request(app)
       .post('/api/auth/register')
       .send({ name: 'Test User', email: 'test@example.com', password: 'Password123!' });
+
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.data.user.email).toBe('test@example.com');
@@ -63,8 +83,16 @@ describe('API Route Inventory & Contract Verification', () => {
     expect(res.body.data.currency).toBe('INR');
   });
 
-  it('GET /api/admin/analytics should return 200 with analytics data structure', async () => {
+  it('GET /api/admin/analytics should reject unauthenticated request with 401', async () => {
     const res = await request(app).get('/api/admin/analytics');
+    expect(res.status).toBe(401);
+    expect(res.body.success).toBe(false);
+  });
+
+  it('GET /api/admin/analytics should return 200 when authenticated as admin', async () => {
+    const res = await request(app)
+      .get('/api/admin/analytics')
+      .set('Authorization', `Bearer ${adminToken}`);
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data.metrics.grossSales).toBeDefined();

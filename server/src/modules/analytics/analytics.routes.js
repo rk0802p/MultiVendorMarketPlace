@@ -1,16 +1,21 @@
 import { Router } from 'express';
 import { ApiResponse } from '../../utils/apiResponse.js';
+import { authenticate } from '../../middleware/authenticate.js';
+import { requireRole } from '../../middleware/authorize.js';
 
 const router = Router();
+
+// Apply authentication and admin role requirement to all admin routes
+router.use(authenticate, requireRole('admin'));
 
 /**
  * @route   GET /api/admin/analytics
  * @desc    Retrieve platform sales, commission revenue, vendor & order analytics
- * @access  Private (Admin)
+ * @access  Private (Admin Only)
  */
 router.get('/analytics', (req, res) => {
   return ApiResponse.success(res, {
-    message: 'Marketplace analytics retrieved (Contract Defined)',
+    message: 'Marketplace analytics retrieved',
     data: {
       metrics: {
         grossSales: 350000,
@@ -26,11 +31,11 @@ router.get('/analytics', (req, res) => {
 /**
  * @route   PATCH /api/admin/vendors/:id/status
  * @desc    Approve or reject a vendor application
- * @access  Private (Admin)
+ * @access  Private (Admin Only)
  */
 router.patch('/vendors/:id/status', (req, res) => {
   return ApiResponse.success(res, {
-    message: 'Vendor application status updated (Contract Defined)',
+    message: 'Vendor application status updated',
     data: {
       vendorId: req.params.id,
       status: req.body.status || 'approved',
@@ -41,11 +46,11 @@ router.patch('/vendors/:id/status', (req, res) => {
 /**
  * @route   GET /api/admin/orders
  * @desc    Retrieve all marketplace orders with vendor breakdowns
- * @access  Private (Admin)
+ * @access  Private (Admin Only)
  */
 router.get('/orders', (req, res) => {
   return ApiResponse.success(res, {
-    message: 'Marketplace orders retrieved (Contract Defined)',
+    message: 'Marketplace orders retrieved',
     data: {
       orders: [],
     },
@@ -55,11 +60,11 @@ router.get('/orders', (req, res) => {
 /**
  * @route   GET /api/admin/users
  * @desc    List marketplace user accounts with role filtering
- * @access  Private (Admin)
+ * @access  Private (Admin Only)
  */
 router.get('/users', (req, res) => {
   return ApiResponse.success(res, {
-    message: 'User directory retrieved (Contract Defined)',
+    message: 'User directory retrieved',
     data: {
       users: [],
     },

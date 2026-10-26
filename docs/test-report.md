@@ -50,3 +50,17 @@
   - Role-based guards block customers from admin APIs and vendors from customer-only actions.
   - Resource ownership checks prevent cross-user resource mutations while granting admin override.
   - Multi-vendor isolation check prevents a vendor from updating line items owned by another vendor.
+
+### Step 2: Authentication & Role-Based Access Verification
+- **Test File**: `server/test/auth.test.js`
+- **Runner**: Vitest v3.2.7 + Supertest v7.0.0
+- **Results**: 16 / 16 tests passed (100%)
+  - Customer & Vendor registration with unique emails and password hashing.
+  - Duplicate email registrations rejected with `409 Conflict`.
+  - Invalid / weak registration payloads rejected with `400 Bad Request`.
+  - Correct credentials authenticate successfully and set HttpOnly JWT cookie.
+  - Incorrect passwords and non-existent emails rejected with `401 Unauthorized`.
+  - Suspended accounts blocked with `403 Forbidden`.
+  - Sensitive password hashes verified to never be returned in API payloads.
+  - Profile retrieval via `/api/auth/me` and logout with cookie invalidation.
+  - Cross-role authorization tests (Customer blocked from Vendor/Admin APIs; Vendor blocked from Admin APIs; Admin granted access).
