@@ -1,9 +1,45 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { ShieldCheck, Users, Store, DollarSign, Activity } from 'lucide-react';
+import { vendorService } from '../../services/api.js';
+import { ShieldCheck, Users, Store, DollarSign, Activity, Check, X, AlertCircle } from 'lucide-react';
 
 export const AdminDashboard = () => {
   const { user } = useAuth();
+  const [pendingStores, setPendingStores] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [actionMessage, setActionMessage] = useState('');
+  const [error, setError] = useState('');
+
+  const fetchPendingStores = async () => {
+    try {
+      const res = await vendorService.getStores({ status: 'pending' });
+      if (res.success && res.data.stores) {
+        setPendingStores(res.data.stores);
+      }
+    } catch (err) {
+      console.error('Failed to load pending stores:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingStores();
+  }, []);
+
+  const handleStatusUpdate = async (storeId, status, name) => {
+    setError('');
+    setActionMessage('');
+    try {
+      const res = await vendorService.updateStoreStatus(storeId, status);
+      if (res.success) {
+        setActionMessage(`Store "${name}" has been ${status}!`);
+        fetchPendingStores();
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update store status.');
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -25,6 +61,20 @@ export const AdminDashboard = () => {
           <span>Full Admin Access Granted</span>
         </div>
       </div>
+
+      {actionMessage && (
+        <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center space-x-2 text-sm text-emerald-700">
+          <Check className="w-5 h-5 flex-shrink-0" />
+          <span>{actionMessage}</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="p-3.5 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2 text-sm text-red-700">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
 
       {/* Admin KPIs Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -64,7 +114,7 @@ export const AdminDashboard = () => {
           </div>
           <div>
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending Approvals</span>
-            <p className="text-xl font-bold text-slate-900">3</p>
+            <p className="text-xl font-bold text-slate-900">{pendingStores.length}</p>
           </div>
         </div>
       </div>
@@ -72,27 +122,53 @@ export const AdminDashboard = () => {
       {/* Admin Actions Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-          <h2 className="text-lg font-bold text-slate-900">Pending Vendor Store Applications</h2>
-          <div className="space-y-3">
-            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold text-slate-800 text-sm">Zenith Soundworks</h4>
-                <p className="text-xs text-slate-500">Audio gear vendor · Applied today</p>
-              </div>
-              <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
-                Pending Review
-              </span>
-            </div>
-            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold text-slate-800 text-sm">Pixel Perfect Monitors</h4>
-                <p className="text-xs text-slate-500">Display hardware · Applied today</p>
-              </div>
-              <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
-                Pending Review
-              </span>
-            </div>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-slate-900">Vendor Store Applications</h2>
+            <span className="text-xs text-slate-400">{pendingStores.length} Pending</span>
           </div>
+
+          {loading ? (
+            <div className="py-8 text-center text-sm text-slate-400">Loading applications...</div>
+          ) : pendingStores.length === 0 ? (
+            <div className="py-8 text-center text-sm text-slate-500 border-2 border-dashed border-slate-100 rounded-xl">
+              No pending vendor applications at this time.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {pendingStores.map((store) => (
+                <div key={store._id} className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 className="font-semibold text-slate-900 text-sm">{store.name}</h4>
+                    <p className="text-xs text-slate-500">
+                      Slug: {store.slug} · Owner: {store.ownerId?.email || 'N/A'}
+                    </p>
+                    {store.description && (
+                      <p className="text-xs text-slate-600 mt-1 line-clamp-1">{store.description}</p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center space-x-2 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleStatusUpdate(store._id, 'approved', store.name)}
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center space-x-1 shadow-sm transition"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Approve</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleStatusUpdate(store._id, 'rejected', store.name)}
+                      className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-semibold flex items-center space-x-1 transition"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      <span>Reject</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
@@ -103,8 +179,8 @@ export const AdminDashboard = () => {
               <strong className="text-slate-900 font-bold">10.00%</strong>
             </div>
             <div className="flex justify-between items-center py-1 border-b border-slate-200/60">
-              <span>Payout Frequency:</span>
-              <strong className="text-slate-900 font-bold">Automated on Delivery</strong>
+              <span>Payout Accounting:</span>
+              <strong className="text-slate-900 font-bold">Automated at Checkout</strong>
             </div>
             <div className="flex justify-between items-center py-1">
               <span>Payment Gateway:</span>

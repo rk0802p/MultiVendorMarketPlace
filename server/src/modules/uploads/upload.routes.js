@@ -1,26 +1,15 @@
 import { Router } from 'express';
-import { ApiResponse } from '../../utils/apiResponse.js';
+import { UploadController } from './upload.controller.js';
+import { authenticate } from '../../middleware/authenticate.js';
+import { requireRole } from '../../middleware/authorize.js';
 
 const router = Router();
 
 /**
  * @route   POST /api/uploads/presigned-url
- * @desc    Generate secure AWS S3 presigned upload URL for direct client-to-S3 media uploads
+ * @desc    Generate secure AWS S3 presigned upload URL for direct media uploads
  * @access  Private (Vendor / Admin)
  */
-router.post('/presigned-url', (req, res) => {
-  const fileName = req.body.fileName || 'product-image.jpg';
-  const fileType = req.body.fileType || 'image/jpeg';
-
-  return ApiResponse.success(res, {
-    statusCode: 201,
-    message: 'Presigned upload URL generated (Contract Defined)',
-    data: {
-      uploadUrl: `https://multivendor-marketplace-images.s3.ap-south-1.amazonaws.com/uploads/${Date.now()}-${fileName}?signature=mock_signature`,
-      fileUrl: `https://multivendor-marketplace-images.s3.ap-south-1.amazonaws.com/uploads/${Date.now()}-${fileName}`,
-      expiresIn: 300,
-    },
-  });
-});
+router.post('/presigned-url', authenticate, requireRole('vendor', 'admin'), UploadController.getPresignedUrl);
 
 export default router;

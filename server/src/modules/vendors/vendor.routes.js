@@ -1,5 +1,7 @@
 import { Router } from 'express';
-import { ApiResponse } from '../../utils/apiResponse.js';
+import { VendorController } from './vendor.controller.js';
+import { applyStoreSchema, updateStoreSchema, updateStatusSchema } from './vendor.validation.js';
+import { validateRequest } from '../auth/auth.validation.js';
 import { authenticate } from '../../middleware/authenticate.js';
 import { requireRole } from '../../middleware/authorize.js';
 
@@ -8,59 +10,36 @@ const router = Router();
 /**
  * @route   POST /api/vendors/apply
  * @desc    Apply to become a marketplace vendor
- * @access  Private (Customer)
+ * @access  Private (Authenticated User / Customer)
  */
-router.post('/apply', authenticate, requireRole('customer'), (req, res) => {
-  return ApiResponse.success(res, {
-    statusCode: 201,
-    message: 'Vendor application submitted for review',
-    data: {
-      store: {
-        id: 'mock_store_id',
-        name: req.body.name || 'Sample Store',
-        slug: req.body.slug || 'sample-store',
-        approvalStatus: 'pending',
-      },
-    },
-  });
-});
+router.post('/apply', authenticate, validateRequest(applyStoreSchema), VendorController.apply);
 
 /**
  * @route   GET /api/vendors/me
  * @desc    Get authenticated vendor's store details
  * @access  Private (Vendor / Admin)
  */
-router.get('/me', authenticate, requireRole('vendor', 'admin'), (req, res) => {
-  return ApiResponse.success(res, {
-    message: 'Vendor store profile retrieved',
-    data: {
-      store: {
-        id: 'mock_store_id',
-        name: 'TechMart Electronics',
-        slug: 'techmart-electronics',
-        approvalStatus: 'approved',
-      },
-    },
-  });
-});
+router.get('/me', authenticate, requireRole('vendor', 'admin'), VendorController.getMe);
 
 /**
  * @route   PATCH /api/vendors/me
  * @desc    Update authenticated vendor's store profile
  * @access  Private (Vendor / Admin)
  */
-router.patch('/me', authenticate, requireRole('vendor', 'admin'), (req, res) => {
-  return ApiResponse.success(res, {
-    message: 'Store profile updated successfully',
-    data: {
-      store: {
-        id: 'mock_store_id',
-        name: req.body.name || 'TechMart Electronics',
-        description: req.body.description || 'Updated description',
-        approvalStatus: 'approved',
-      },
-    },
-  });
-});
+router.patch('/me', authenticate, requireRole('vendor', 'admin'), validateRequest(updateStoreSchema), VendorController.updateMe);
+
+/**
+ * @route   GET /api/vendors
+ * @desc    List marketplace stores
+ * @access  Public
+ */
+router.get('/', VendorController.listStores);
+
+/**
+ * @route   GET /api/vendors/:idOrSlug
+ * @desc    Get public store profile by ID or slug
+ * @access  Public
+ */
+router.get('/:idOrSlug', VendorController.getStoreById);
 
 export default router;

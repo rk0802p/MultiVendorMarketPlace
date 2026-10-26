@@ -50,6 +50,20 @@ const storeSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    contactEmail: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
+    contactPhone: {
+      type: String,
+      trim: true,
+    },
+    paymentOnboardingStatus: {
+      type: String,
+      enum: ['not_started', 'pending', 'completed'],
+      default: 'not_started',
+    },
     paymentAccountId: {
       type: String,
       default: '',

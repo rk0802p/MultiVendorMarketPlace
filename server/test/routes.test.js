@@ -3,6 +3,7 @@ import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import app from '../src/app.js';
 import { AuthService } from '../src/modules/auth/auth.service.js';
+import { ProductService } from '../src/modules/products/product.service.js';
 import { config } from '../src/config/environment.js';
 
 describe('API Route Inventory & Contract Verification', () => {
@@ -56,6 +57,11 @@ describe('API Route Inventory & Contract Verification', () => {
   });
 
   it('GET /api/products should return 200 with catalog structure', async () => {
+    vi.spyOn(ProductService, 'getProducts').mockResolvedValueOnce({
+      products: [],
+      pagination: { page: 1, limit: 10, total: 0, pages: 0 },
+    });
+
     const res = await request(app).get('/api/products?page=1&limit=10');
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
@@ -101,6 +107,7 @@ describe('API Route Inventory & Contract Verification', () => {
   it('POST /api/uploads/presigned-url should return 201 with S3 presigned URL structure', async () => {
     const res = await request(app)
       .post('/api/uploads/presigned-url')
+      .set('Authorization', `Bearer ${adminToken}`)
       .send({ fileName: 'laptop.jpg', fileType: 'image/jpeg' });
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);

@@ -1,99 +1,69 @@
 import { Router } from 'express';
-import { ApiResponse } from '../../utils/apiResponse.js';
+import { ProductController } from './product.controller.js';
+import { createProductSchema, updateProductSchema } from './product.validation.js';
+import { validateRequest } from '../auth/auth.validation.js';
+import { authenticate } from '../../middleware/authenticate.js';
+import { requireRole } from '../../middleware/authorize.js';
 
 const router = Router();
 
 /**
  * @route   GET /api/products
- * @desc    Browse, search, filter, and sort products
+ * @desc    Browse, search, filter, and sort active products
  * @access  Public
  */
-router.get('/', (req, res) => {
-  return ApiResponse.success(res, {
-    message: 'Products catalog retrieved (Contract Defined)',
-    data: {
-      products: [],
-      pagination: {
-        page: parseInt(req.query.page, 10) || 1,
-        limit: parseInt(req.query.limit, 10) || 12,
-        total: 0,
-      },
-    },
-  });
-});
+router.get('/', ProductController.list);
+
+/**
+ * @route   GET /api/products/vendor/my-products
+ * @desc    Retrieve all products listed by the authenticated vendor
+ * @access  Private (Vendor / Admin)
+ */
+router.get('/vendor/my-products', authenticate, requireRole('vendor', 'admin'), ProductController.listVendorProducts);
 
 /**
  * @route   GET /api/products/:id
  * @desc    Retrieve product details by ID or slug
  * @access  Public
  */
-router.get('/:id', (req, res) => {
-  return ApiResponse.success(res, {
-    message: 'Product details retrieved (Contract Defined)',
-    data: {
-      product: {
-        id: req.params.id,
-        title: 'Mechanical Keyboard RGB',
-        price: 2499,
-        stock: 50,
-        category: 'Electronics',
-        status: 'active',
-      },
-    },
-  });
-});
+router.get('/:id', ProductController.getById);
 
 /**
  * @route   POST /api/products
- * @desc    Create a new product listing
- * @access  Private (Approved Vendor)
+ * @desc    Create a new product listing (Approved Vendor only)
+ * @access  Private (Vendor / Admin)
  */
-router.post('/', (req, res) => {
-  return ApiResponse.success(res, {
-    statusCode: 201,
-    message: 'Product created successfully (Contract Defined)',
-    data: {
-      product: {
-        id: 'mock_product_id',
-        title: req.body.title || 'New Product',
-        price: req.body.price || 999,
-        stock: req.body.stock || 10,
-        status: 'active',
-      },
-    },
-  });
-});
+router.post(
+  '/',
+  authenticate,
+  requireRole('vendor', 'admin'),
+  validateRequest(createProductSchema),
+  ProductController.create
+);
 
 /**
  * @route   PATCH /api/products/:id
  * @desc    Update owned product listing
- * @access  Private (Vendor Owner)
+ * @access  Private (Vendor Owner / Admin)
  */
-router.patch('/:id', (req, res) => {
-  return ApiResponse.success(res, {
-    message: 'Product updated successfully (Contract Defined)',
-    data: {
-      product: {
-        id: req.params.id,
-        title: req.body.title || 'Updated Product',
-      },
-    },
-  });
-});
+router.patch(
+  '/:id',
+  authenticate,
+  requireRole('vendor', 'admin'),
+  validateRequest(updateProductSchema),
+  ProductController.update
+);
 
 /**
  * @route   DELETE /api/products/:id
- * @desc    Archive/remove owned product
- * @access  Private (Vendor Owner)
+ * @desc    Archive/soft-delete owned product
+ * @access  Private (Vendor Owner / Admin)
  */
-router.delete('/:id', (req, res) => {
-  return ApiResponse.success(res, {
-    message: 'Product archived successfully (Contract Defined)',
-    data: {
-      id: req.params.id,
-      status: 'archived',
-    },
-  });
-});
+router.delete(
+  '/:id',
+  authenticate,
+  requireRole('vendor', 'admin'),
+  ProductController.archive
+);
 
 export default router;

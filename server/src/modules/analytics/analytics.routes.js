@@ -2,6 +2,9 @@ import { Router } from 'express';
 import { ApiResponse } from '../../utils/apiResponse.js';
 import { authenticate } from '../../middleware/authenticate.js';
 import { requireRole } from '../../middleware/authorize.js';
+import { VendorController } from '../vendors/vendor.controller.js';
+import { updateStatusSchema } from '../vendors/vendor.validation.js';
+import { validateRequest } from '../auth/auth.validation.js';
 
 const router = Router();
 
@@ -33,15 +36,7 @@ router.get('/analytics', (req, res) => {
  * @desc    Approve or reject a vendor application
  * @access  Private (Admin Only)
  */
-router.patch('/vendors/:id/status', (req, res) => {
-  return ApiResponse.success(res, {
-    message: 'Vendor application status updated',
-    data: {
-      vendorId: req.params.id,
-      status: req.body.status || 'approved',
-    },
-  });
-});
+router.patch('/vendors/:id/status', validateRequest(updateStatusSchema), VendorController.updateStatus);
 
 /**
  * @route   GET /api/admin/orders

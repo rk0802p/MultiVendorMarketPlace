@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import app from '../src/app.js';
 import { User } from '../src/models/User.js';
+import { Store } from '../src/models/Store.js';
 import { config } from '../src/config/environment.js';
 
 describe('Step 2: Authentication & Role-Based Access Tests', () => {
@@ -271,6 +272,10 @@ describe('Step 2: Authentication & Role-Based Access Tests', () => {
     });
 
     it('Vendor CAN access Vendor Store endpoints', async () => {
+      vi.spyOn(Store, 'findOne').mockReturnValue({
+        populate: vi.fn().mockResolvedValue({ _id: 'store_1', name: 'Vendor Store' }),
+      });
+
       const res = await request(app)
         .get('/api/vendors/me')
         .set('Authorization', `Bearer ${vendorToken}`);

@@ -42,7 +42,14 @@ export const Navbar = () => {
             to="/"
             className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
           >
-            Storefront
+            Home
+          </Link>
+
+          <Link
+            to="/products"
+            className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
+          >
+            Browse Products
           </Link>
 
           {isAuthenticated && user?.role === 'customer' && (

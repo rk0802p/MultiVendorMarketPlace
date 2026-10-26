@@ -64,3 +64,17 @@
   - Sensitive password hashes verified to never be returned in API payloads.
   - Profile retrieval via `/api/auth/me` and logout with cookie invalidation.
   - Cross-role authorization tests (Customer blocked from Vendor/Admin APIs; Vendor blocked from Admin APIs; Admin granted access).
+
+### Step 3: Vendor Onboarding, Product CRUD & S3 Upload Verification
+- **Test File**: `server/test/step3.test.js`
+- **Runner**: Vitest v3.2.7 + Supertest v7.0.0
+- **Results**: 10 / 10 tests passed (100%)
+  - Customer application for vendor store initializes with `approvalStatus: 'pending'`.
+  - Duplicate store registrations or duplicate slug requests rejected with `409 Conflict`.
+  - Admin approves vendor application and elevates user account role to `'vendor'`.
+  - Unapproved vendors blocked from product publishing with `403 Forbidden`.
+  - Approved vendors successfully create products with title, price, inventory stock, category, and S3 media.
+  - Vendor successfully updates own product inventory and price.
+  - Cross-vendor modification blocked: Vendor A receives `403 Forbidden` when attempting to edit or archive Vendor B's product.
+  - Vendor archives own product listing (soft delete).
+  - AWS S3 direct presigned URL endpoint validates image MIME types and blocks unsupported files (e.g. PDF/EXE) with `400 Bad Request`.
