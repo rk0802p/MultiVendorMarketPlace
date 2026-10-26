@@ -81,17 +81,17 @@ At checkout:
 
 ---
 
-## 4. 14-Day Execution Schedule & Roadmap
+## 4. Execution Roadmap
 
 - [x] **Pre-Step 1**: Repository initialization, folder structure scaffolding, baseline configuration, environment templates, docs skeleton.
-- [ ] **Day 1 (Step 1)**: Technical planning, database schema modeling, API contract specification, and role/permission matrix.
-- [ ] **Day 2 (Step 2)**: Authentication module (JWT, bcrypt, HttpOnly cookies) and RBAC middleware.
-- [ ] **Days 3–4 (Step 3)**: Vendor onboarding & approval workflows; Product CRUD & AWS S3 presigned uploads.
-- [ ] **Day 5 (Step 4)**: Elasticsearch indexing, full-text search, multi-faceted filtering, and sorting.
-- [ ] **Days 6–8 (Step 5)**: Redis-backed cart, atomic checkout with concurrency-safe stock decrement, and multi-vendor order lifecycle (`placed` → `packed` → `shipped` → `delivered`).
-- [ ] **Days 9–10 (Step 6)**: Razorpay test mode integration, signature validation, commission ledger, and idempotent webhooks.
-- [ ] **Days 11–12 (Step 7)**: Verified-buyer reviews, promo coupons, PDF invoice generation, and admin analytics dashboard.
-- [ ] **Days 13–14**: End-to-end integration testing, security hardening, cloud deployment (Render + Vercel + MongoDB Atlas), and final demo submission.
+- [ ] **Step 1**: Technical planning, database schema modeling, API contract specification, and role/permission matrix.
+- [ ] **Step 2**: Authentication module (JWT, bcrypt, HttpOnly cookies) and RBAC middleware.
+- [ ] **Step 3**: Vendor onboarding & approval workflows; Product CRUD & AWS S3 presigned uploads.
+- [ ] **Step 4**: Elasticsearch indexing, full-text search, multi-faceted filtering, and sorting.
+- [ ] **Step 5**: Redis-backed cart, atomic checkout with concurrency-safe stock decrement, and multi-vendor order lifecycle (`placed` → `packed` → `shipped` → `delivered`).
+- [ ] **Step 6**: Razorpay test mode integration, signature validation, commission ledger, and idempotent webhooks.
+- [ ] **Step 7**: Verified-buyer reviews, promo coupons, PDF invoice generation, and admin analytics dashboard.
+- [ ] **Step 8 (Final Deliverables & Verification)**: End-to-end integration testing, security hardening, cloud deployment (Render + Vercel + MongoDB Atlas), and final demo submission.
 
 ---
 

@@ -142,7 +142,7 @@ Promotional codes and discounts.
 ## 3. Redis Transient Store (Cart)
 
 - **Key Format**: `cart:user:<userId>`
-- **TTL**: 7 days (auto-extended on mutation)
+- **TTL**: 604800 seconds (auto-extended on mutation)
 - **Data Structure**: JSON string or Hash representing cart items:
   ```json
   {

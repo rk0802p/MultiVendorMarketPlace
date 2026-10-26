@@ -13,7 +13,7 @@ export const config = {
 
   redis: {
     url: process.env.REDIS_URL || 'redis://localhost:6379',
-    cartTtlSeconds: parseInt(process.env.REDIS_CART_TTL_SECONDS, 10) || 604800, // 7 days
+    cartTtlSeconds: parseInt(process.env.REDIS_CART_TTL_SECONDS, 10) || 604800,
   },
 
   jwt: {

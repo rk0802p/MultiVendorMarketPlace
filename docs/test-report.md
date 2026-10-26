@@ -19,4 +19,4 @@
 
 ## 2. Test Execution Log
 
-*(Test execution results will be recorded here as each module is developed and tested across Days 2–13).*
+*(Test execution results will be recorded here as each module is developed and tested across Steps 2–8).*
