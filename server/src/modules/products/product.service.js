@@ -1,5 +1,6 @@
 import { Product } from '../../models/Product.js';
 import { Store } from '../../models/Store.js';
+import { ProductSearchService } from './product.search.service.js';
 
 export class ProductService {
   /**
@@ -38,6 +39,12 @@ export class ProductService {
     });
 
     await product.save();
+
+    // 3. Synchronize with Elasticsearch Index (if active)
+    if (product.status === 'active') {
+      await ProductSearchService.indexProduct(product, store);
+    }
+
     return product;
   }
 
@@ -69,6 +76,14 @@ export class ProductService {
     }
 
     await product.save();
+
+    // Synchronize updates with Elasticsearch
+    if (product.status === 'archived' || product.status === 'draft') {
+      await ProductSearchService.removeProductFromIndex(product._id);
+    } else {
+      await ProductSearchService.indexProduct(product);
+    }
+
     return product;
   }
 
@@ -93,6 +108,9 @@ export class ProductService {
 
     product.status = 'archived';
     await product.save();
+
+    // Remove from Elasticsearch active search index
+    await ProductSearchService.removeProductFromIndex(product._id);
 
     return product;
   }
@@ -119,9 +137,18 @@ export class ProductService {
   }
 
   /**
-   * Browse active products for customer catalogue
+   * Browse and search active products for customer catalogue
+   * Primary: Elasticsearch (Full-text, filters, facets, sorting, pagination)
+   * Fallback: MongoDB Query
    */
   static async getProducts(query = {}) {
+    // 1. Primary Search Engine: Elasticsearch
+    const esResult = await ProductSearchService.search(query);
+    if (esResult) {
+      return esResult;
+    }
+
+    // 2. Fallback Engine: MongoDB
     const filter = { status: 'active' };
 
     // Keyword search across title and description
@@ -133,7 +160,7 @@ export class ProductService {
     }
 
     // Category filter
-    if (query.category) {
+    if (query.category && query.category !== 'All Categories') {
       filter.category = query.category;
     }
 
@@ -142,19 +169,26 @@ export class ProductService {
       filter.storeId = query.storeId;
     }
 
+    // Availability filter
+    if (query.inStockOnly === true || query.inStockOnly === 'true') {
+      filter.stock = { $gt: 0 };
+    }
+
     // Price range
     if (query.minPrice !== undefined || query.maxPrice !== undefined) {
       filter.price = {};
-      if (query.minPrice !== undefined) filter.price.$gte = Number(query.minPrice);
-      if (query.maxPrice !== undefined) filter.price.$lte = Number(query.maxPrice);
+      if (query.minPrice !== undefined && query.minPrice !== '') filter.price.$gte = Number(query.minPrice);
+      if (query.maxPrice !== undefined && query.maxPrice !== '') filter.price.$lte = Number(query.maxPrice);
+      if (Object.keys(filter.price).length === 0) delete filter.price;
     }
 
     // Sorting
     let sort = { createdAt: -1 };
-    if (query.sort === 'price_asc') sort = { price: 1 };
-    else if (query.sort === 'price_desc') sort = { price: -1 };
+    if (query.sort === 'price_asc') sort = { price: 1, createdAt: -1 };
+    else if (query.sort === 'price_desc') sort = { price: -1, createdAt: -1 };
+    else if (query.sort === 'rating') sort = { averageRating: -1, reviewCount: -1 };
     else if (query.sort === 'newest') sort = { createdAt: -1 };
-    else if (query.sort === 'rating') sort = { averageRating: -1 };
+    else if (query.sort === 'relevance') sort = query.q ? { createdAt: -1 } : { createdAt: -1 };
 
     // Pagination
     const page = Math.max(1, parseInt(query.page, 10) || 1);
@@ -176,8 +210,13 @@ export class ProductService {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit),
+        pages: Math.ceil(total / limit) || 1,
       },
+      facets: {
+        categories: [],
+        priceStats: { min: 0, max: 0, avg: 0, count: total },
+      },
+      source: 'mongodb_fallback',
     };
   }
 

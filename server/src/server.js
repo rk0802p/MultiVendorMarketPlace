@@ -1,11 +1,16 @@
 import app from './app.js';
 import { config } from './config/environment.js';
 import { connectDatabase } from './config/database.js';
+import { checkElasticConnection, ensureProductIndex, closeElasticConnection } from './config/elasticsearch.js';
 
 const startServer = async () => {
   try {
     // Connect to database
     await connectDatabase();
+
+    // Initialize Elasticsearch
+    await checkElasticConnection();
+    await ensureProductIndex();
 
     // Start listening
     const server = app.listen(config.port, () => {
@@ -15,8 +20,9 @@ const startServer = async () => {
     });
 
     // Graceful shutdown handling
-    const shutdown = () => {
+    const shutdown = async () => {
       console.log('[Server] Gracefully shutting down...');
+      await closeElasticConnection();
       server.close(() => {
         console.log('[Server] HTTP server closed.');
         process.exit(0);

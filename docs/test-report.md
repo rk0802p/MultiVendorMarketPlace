@@ -78,3 +78,18 @@
   - Cross-vendor modification blocked: Vendor A receives `403 Forbidden` when attempting to edit or archive Vendor B's product.
   - Vendor archives own product listing (soft delete).
   - AWS S3 direct presigned URL endpoint validates image MIME types and blocks unsupported files (e.g. PDF/EXE) with `400 Bad Request`.
+
+### Step 4: Elasticsearch Search, Filters, Sorting & Sync Verification
+- **Test File**: `server/test/step4.elasticsearch.test.js`
+- **Runner**: Vitest v3.2.7 + Supertest v7.0.0
+- **Results**: 13 / 13 tests passed (100%)
+  - Boolean DSL query builder generates keyword `multi_match` queries boosting `title^3` over description.
+  - Inactive and archived products strictly excluded with `term: { status: 'active' }`.
+  - Multi-faceted filters for category, vendor store, price range (`gte`/`lte`), and in-stock availability (`stock > 0`) applied accurately.
+  - Sorting criteria supported: `price_asc`, `price_desc`, `newest`, and relevance score `_score`.
+  - Pagination offsets (`from` and `size`) calculated accurately from `page` and `limit`.
+  - Product document formatting correctly includes store snapshot and denormalized fields.
+  - Outbox retry pattern captures index operations when Elasticsearch service is temporarily unreachable.
+  - Real-time index synchronization on product create, update, and archive/delete.
+  - Express API endpoint `/api/products` delivers Elasticsearch search results, aggregations, and facets.
+  - Graceful MongoDB search fallback ensures catalog availability if Elasticsearch is down.

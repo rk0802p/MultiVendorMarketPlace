@@ -5,11 +5,14 @@ import app from '../src/app.js';
 import { Store } from '../src/models/Store.js';
 import { Product } from '../src/models/Product.js';
 import { User } from '../src/models/User.js';
+import { ProductSearchService } from '../src/modules/products/product.search.service.js';
 import { config } from '../src/config/environment.js';
 
 describe('Step 3: Vendor Onboarding, Product CRUD & S3 Upload Tests', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.spyOn(ProductSearchService, 'indexProduct').mockResolvedValue(true);
+    vi.spyOn(ProductSearchService, 'removeProductFromIndex').mockResolvedValue(true);
   });
 
   const vendorId1 = '653a1b2c3d4e5f6a7b8c9d11';
