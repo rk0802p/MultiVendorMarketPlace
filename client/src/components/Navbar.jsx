@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Store, ShoppingBag, ShieldAlert, LogOut, User as UserIcon } from 'lucide-react';
+import { useCart } from '../context/CartContext.jsx';
+import { Store, ShoppingBag, ShieldAlert, LogOut, ShoppingCart, Package } from 'lucide-react';
 
 export const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { itemCount } = useCart();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -53,23 +55,41 @@ export const Navbar = () => {
           </Link>
 
           {isAuthenticated && user?.role === 'customer' && (
-            <Link
-              to="/customer/dashboard"
-              className="flex items-center space-x-1 text-sm font-medium text-slate-600 hover:text-blue-600 transition"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              <span>Customer Portal</span>
-            </Link>
+            <>
+              <Link
+                to="/orders"
+                className="flex items-center space-x-1 text-sm font-medium text-slate-600 hover:text-blue-600 transition"
+              >
+                <Package className="w-4 h-4" />
+                <span>My Orders</span>
+              </Link>
+              <Link
+                to="/customer/dashboard"
+                className="flex items-center space-x-1 text-sm font-medium text-slate-600 hover:text-blue-600 transition"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>Customer Portal</span>
+              </Link>
+            </>
           )}
 
           {isAuthenticated && (user?.role === 'vendor' || user?.role === 'admin') && (
-            <Link
-              to="/vendor/dashboard"
-              className="flex items-center space-x-1 text-sm font-medium text-slate-600 hover:text-emerald-600 transition"
-            >
-              <Store className="w-4 h-4" />
-              <span>Vendor Dashboard</span>
-            </Link>
+            <>
+              <Link
+                to="/vendor/dashboard"
+                className="flex items-center space-x-1 text-sm font-medium text-slate-600 hover:text-emerald-600 transition"
+              >
+                <Store className="w-4 h-4" />
+                <span>Vendor Dashboard</span>
+              </Link>
+              <Link
+                to="/vendor/orders"
+                className="flex items-center space-x-1 text-sm font-medium text-slate-600 hover:text-emerald-600 transition"
+              >
+                <Package className="w-4 h-4" />
+                <span>Vendor Orders</span>
+              </Link>
+            </>
           )}
 
           {isAuthenticated && user?.role === 'admin' && (
@@ -83,8 +103,22 @@ export const Navbar = () => {
           )}
         </nav>
 
-        {/* User / Auth Controls */}
-        <div className="flex items-center space-x-3">
+        {/* Right Section: Cart & User Auth Controls */}
+        <div className="flex items-center space-x-4">
+          {/* Shopping Cart Button with Count Badge */}
+          <Link
+            to="/cart"
+            className="relative p-2 text-slate-600 hover:text-blue-600 hover:bg-slate-50 rounded-xl transition flex items-center"
+            title="View Cart"
+          >
+            <ShoppingCart className="w-5 h-5" />
+            {itemCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-blue-600 text-white font-bold text-[11px] w-5 h-5 rounded-full flex items-center justify-center shadow-sm animate-pulse">
+                {itemCount}
+              </span>
+            )}
+          </Link>
+
           {isAuthenticated ? (
             <div className="flex items-center space-x-3">
               <div className="hidden sm:flex flex-col text-right">

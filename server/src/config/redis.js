@@ -4,16 +4,27 @@ import { config } from './environment.js';
 let redisClient = null;
 
 export const getRedisClient = async () => {
+  // In unit test environment, return null so tests cleanly use CartService in-memory fallback
+  if (process.env.NODE_ENV === 'test') {
+    return null;
+  }
+
   if (redisClient && redisClient.isOpen) {
     return redisClient;
   }
 
   redisClient = createClient({
     url: config.redis.url,
+    socket: {
+      reconnectStrategy: (retries) => (retries > 1 ? new Error('Redis connection limit reached') : 500),
+      connectTimeout: 1000,
+    },
   });
 
   redisClient.on('error', (err) => {
-    console.warn('[Redis] Connection warning/error:', err.message);
+    if (process.env.NODE_ENV !== 'test') {
+      console.warn('[Redis] Connection warning/error:', err.message);
+    }
   });
 
   redisClient.on('connect', () => {
@@ -24,7 +35,9 @@ export const getRedisClient = async () => {
     await redisClient.connect();
     return redisClient;
   } catch (error) {
-    console.warn(`[Redis] Could not connect to Redis at ${config.redis.url}: ${error.message}`);
+    if (process.env.NODE_ENV !== 'test') {
+      console.warn(`[Redis] Could not connect to Redis at ${config.redis.url}: ${error.message}`);
+    }
     return null;
   }
 };
@@ -32,5 +45,6 @@ export const getRedisClient = async () => {
 export const closeRedisConnection = async () => {
   if (redisClient && redisClient.isOpen) {
     await redisClient.quit();
+    redisClient = null;
   }
 };

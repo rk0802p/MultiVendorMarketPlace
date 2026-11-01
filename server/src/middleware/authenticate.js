@@ -48,3 +48,24 @@ export const authenticate = async (req, res, next) => {
     });
   }
 };
+
+export const optionalAuthenticate = async (req, res, next) => {
+  try {
+    let token = null;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies && req.cookies.jwt) {
+      token = req.cookies.jwt;
+    }
+
+    if (token) {
+      const decoded = jwt.verify(token, config.jwt.secret);
+      if (!decoded.status || decoded.status !== 'suspended') {
+        req.user = decoded;
+      }
+    }
+  } catch (err) {
+    // Gracefully ignore token errors for optional authentication
+  }
+  next();
+};

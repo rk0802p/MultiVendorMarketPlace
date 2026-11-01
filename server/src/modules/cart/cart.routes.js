@@ -1,78 +1,45 @@
 import { Router } from 'express';
-import { ApiResponse } from '../../utils/apiResponse.js';
+import { optionalAuthenticate } from '../../middleware/authenticate.js';
+import { CartController } from './cart.controller.js';
 
 const router = Router();
 
+// Apply optional authentication so registered users have persistence across devices
+router.use(optionalAuthenticate);
+
 /**
  * @route   GET /api/cart
- * @desc    Retrieve customer's active shopping cart (from Redis with fresh Mongo prices)
- * @access  Private (Customer)
+ * @desc    Retrieve active shopping cart hydrated with fresh prices & stock
+ * @access  Public / Private
  */
-router.get('/', (req, res) => {
-  return ApiResponse.success(res, {
-    message: 'Cart retrieved successfully (Contract Defined)',
-    data: {
-      items: [],
-      subtotal: 0,
-      itemCount: 0,
-    },
-  });
-});
+router.get('/', CartController.getCart);
 
 /**
  * @route   POST /api/cart/items
- * @desc    Add item to customer's cart
- * @access  Private (Customer)
+ * @desc    Add item to cart
+ * @access  Public / Private
  */
-router.post('/items', (req, res) => {
-  return ApiResponse.success(res, {
-    statusCode: 201,
-    message: 'Item added to cart (Contract Defined)',
-    data: {
-      productId: req.body.productId,
-      quantity: req.body.quantity || 1,
-    },
-  });
-});
+router.post('/items', CartController.addItem);
 
 /**
  * @route   PATCH /api/cart/items/:productId
  * @desc    Update quantity of product in cart
- * @access  Private (Customer)
+ * @access  Public / Private
  */
-router.patch('/items/:productId', (req, res) => {
-  return ApiResponse.success(res, {
-    message: 'Cart item quantity updated (Contract Defined)',
-    data: {
-      productId: req.params.productId,
-      quantity: req.body.quantity,
-    },
-  });
-});
+router.patch('/items/:productId', CartController.updateQuantity);
 
 /**
  * @route   DELETE /api/cart/items/:productId
  * @desc    Remove an item from cart
- * @access  Private (Customer)
+ * @access  Public / Private
  */
-router.delete('/items/:productId', (req, res) => {
-  return ApiResponse.success(res, {
-    message: 'Item removed from cart (Contract Defined)',
-    data: {
-      removedProductId: req.params.productId,
-    },
-  });
-});
+router.delete('/items/:productId', CartController.removeItem);
 
 /**
  * @route   DELETE /api/cart
  * @desc    Clear entire cart
- * @access  Private (Customer)
+ * @access  Public / Private
  */
-router.delete('/', (req, res) => {
-  return ApiResponse.success(res, {
-    message: 'Cart cleared successfully (Contract Defined)',
-  });
-});
+router.delete('/', CartController.clearCart);
 
 export default router;

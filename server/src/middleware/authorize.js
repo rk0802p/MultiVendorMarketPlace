@@ -25,6 +25,8 @@ export const requireRole = (...allowedRoles) => {
   };
 };
 
+export const authorize = requireRole;
+
 /**
  * Self or Admin Ownership Check
  * Ensures a customer or user can only access/modify their own resource,

@@ -93,3 +93,21 @@
   - Real-time index synchronization on product create, update, and archive/delete.
   - Express API endpoint `/api/products` delivers Elasticsearch search results, aggregations, and facets.
   - Graceful MongoDB search fallback ensures catalog availability if Elasticsearch is down.
+
+### Step 5: Redis Cart, Atomic Checkout & Multi-Vendor Order Lifecycle Verification
+- **Test File**: `server/test/step5.cart-orders.test.js`
+- **Runner**: Vitest v3.2.7 + Supertest v7.0.0
+- **Results**: 11 / 11 tests passed (100%)
+  - Shopping cart storage in Redis with key pattern `cart:user:<userId>` and in-memory test fallback.
+  - Real-time cart hydration: fetches live product prices and inventory, flagging out-of-stock items (`isAvailable: false`).
+  - Add to cart validates stock limits and increments quantities up to available inventory.
+  - Cart item quantity update and removal on quantity = 0.
+  - Cart clearing endpoint (`DELETE /api/cart`).
+  - Concurrency-safe atomic inventory decrement via atomic `findOneAndUpdate` preventing race conditions and overselling.
+  - Automatic rollback of prior decrements if any product in a multi-item checkout lacks sufficient inventory (`409 Conflict`).
+  - Marketplace 10% platform commission calculation snapshot: ₹3,000 subtotal generates ₹300 platform share, ₹1,800 to Vendor A, and ₹900 to Vendor B.
+  - Multi-vendor order isolation: Vendor A can retrieve only items belonging to their store.
+  - Fulfillment lifecycle progression: Vendor advances item status through `placed` → `packed` → `shipped` (with tracking number) → `delivered`.
+  - Multi-vendor fulfillment guard: Vendor A is blocked (`403 Forbidden`) from modifying Vendor B's items.
+  - Derived order status recalculation updates overall order status (`placed` → `in_progress` → `completed`).
+  - Customer order history retrieval via `/api/orders/my`.

@@ -123,4 +123,61 @@ export const uploadService = {
   },
 };
 
+export const cartService = {
+  async getCart() {
+    const res = await api.get('/cart');
+    return res.data;
+  },
+
+  async addItem(productId, quantity = 1) {
+    const res = await api.post('/cart/items', { productId, quantity });
+    return res.data;
+  },
+
+  async updateQuantity(productId, quantity) {
+    const res = await api.patch(`/cart/items/${productId}`, { quantity });
+    return res.data;
+  },
+
+  async removeItem(productId) {
+    const res = await api.delete(`/cart/items/${productId}`);
+    return res.data;
+  },
+
+  async clearCart() {
+    const res = await api.delete('/cart');
+    return res.data;
+  },
+};
+
+export const orderService = {
+  async checkout(data) {
+    const res = await api.post('/orders', data);
+    return res.data;
+  },
+
+  async getMyOrders() {
+    const res = await api.get('/orders/my');
+    return res.data;
+  },
+
+  async getOrder(id) {
+    const res = await api.get(`/orders/${id}`);
+    return res.data;
+  },
+
+  async getVendorOrderItems(params = {}) {
+    const res = await api.get('/orders/vendor/items', { params });
+    return res.data;
+  },
+
+  async updateVendorItemStatus(orderId, itemId, status, trackingNumber = '') {
+    const res = await api.patch(`/orders/vendor/${orderId}/items/${itemId}/status`, {
+      status,
+      trackingNumber,
+    });
+    return res.data;
+  },
+};
+
 export default api;

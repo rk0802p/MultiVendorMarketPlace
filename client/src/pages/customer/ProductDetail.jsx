@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { productService } from '../../services/api.js';
-import { Store, Package, Check, ShieldCheck, ArrowLeft, ShoppingCart, Star } from 'lucide-react';
+import { useCart } from '../../context/CartContext.jsx';
+import { Store, Package, Check, ShieldCheck, ArrowLeft, ShoppingCart, Star, AlertCircle } from 'lucide-react';
 
 export const ProductDetail = () => {
   const { id } = useParams();
+  const { addToCart } = useCart();
   const [product, setProduct] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [cartError, setCartError] = useState('');
   const [addedMessage, setAddedMessage] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -29,9 +33,18 @@ export const ProductDetail = () => {
     fetchProduct();
   }, [id]);
 
-  const handleAddToCart = () => {
-    setAddedMessage(true);
-    setTimeout(() => setAddedMessage(false), 2500);
+  const handleAddToCart = async () => {
+    if (!product) return;
+    setCartError('');
+    setAdding(true);
+    const result = await addToCart(product._id, quantity);
+    setAdding(false);
+    if (result.success) {
+      setAddedMessage(true);
+      setTimeout(() => setAddedMessage(false), 4000);
+    } else {
+      setCartError(result.error);
+    }
   };
 
   if (loading) {
@@ -160,9 +173,24 @@ export const ProductDetail = () => {
           {/* Cart Actions */}
           <div className="pt-4 border-t border-slate-200 space-y-3">
             {addedMessage && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-semibold flex items-center space-x-2">
-                <Check className="w-4 h-4 text-emerald-600" />
-                <span>Added to cart! Checkout will be connected in Step 5.</span>
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-semibold flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Check className="w-4 h-4 text-emerald-600" />
+                  <span>Added {quantity} item(s) to your shopping cart!</span>
+                </div>
+                <Link
+                  to="/cart"
+                  className="px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition"
+                >
+                  View Cart
+                </Link>
+              </div>
+            )}
+
+            {cartError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-800 font-semibold flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+                <span>{cartError}</span>
               </div>
             )}
 
@@ -188,11 +216,11 @@ export const ProductDetail = () => {
               <button
                 type="button"
                 onClick={handleAddToCart}
-                disabled={!inStock}
+                disabled={!inStock || adding}
                 className="flex-1 py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm transition shadow-sm flex items-center justify-center space-x-2 disabled:opacity-50"
               >
                 <ShoppingCart className="w-4 h-4" />
-                <span>{inStock ? 'Add to Cart' : 'Out of Stock'}</span>
+                <span>{adding ? 'Adding...' : inStock ? 'Add to Cart' : 'Out of Stock'}</span>
               </button>
             </div>
           </div>
