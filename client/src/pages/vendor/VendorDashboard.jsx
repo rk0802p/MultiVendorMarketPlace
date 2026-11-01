@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { vendorService, productService } from '../../services/api.js';
-import { Store, Package, TrendingUp, Plus, Clock, Settings, AlertCircle, CheckCircle } from 'lucide-react';
+import { vendorService, productService, orderService } from '../../services/api.js';
+import { Store, Package, TrendingUp, Plus, Clock, Settings, AlertCircle, CheckCircle, Truck, ChevronRight } from 'lucide-react';
 
 export const VendorDashboard = () => {
   const { user } = useAuth();
   const [store, setStore] = useState(null);
   const [productsCount, setProductsCount] = useState(0);
+  const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
+  const [grossSales, setGrossSales] = useState(0);
   const [loading, setLoading] = useState(true);
   const [hasNoStore, setHasNoStore] = useState(false);
 
@@ -23,6 +25,16 @@ export const VendorDashboard = () => {
           const prodRes = await productService.getMyProducts();
           if (prodRes.success && prodRes.data.products) {
             setProductsCount(prodRes.data.products.length);
+          }
+
+          // Fetch vendor order items
+          const orderRes = await orderService.getVendorOrderItems();
+          if (orderRes.success && orderRes.data.items) {
+            const items = orderRes.data.items;
+            const pending = items.filter((r) => ['placed', 'packed'].includes(r.item.fulfillmentStatus)).length;
+            setPendingOrdersCount(pending);
+            const totalSales = items.reduce((sum, r) => sum + (r.item.itemSubtotal || 0), 0);
+            setGrossSales(totalSales);
           }
         }
       } catch (err) {
@@ -101,22 +113,30 @@ export const VendorDashboard = () => {
           <div>
             <h4 className="text-sm font-bold text-red-900">Store Application Rejected</h4>
             <p className="text-xs text-red-700">
-              Reason: {store?.rejectionReason || 'Application did not meet marketplace requirements.'}
+              Reason: {store?.rejectionReason || 'Does not meet marketplace onboarding requirements.'} Please update your application or contact support.
             </p>
           </div>
         </div>
       )}
 
-      {/* Header Banner */}
-      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* Header Info */}
+      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <span className="text-xs uppercase font-bold tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-            Vendor Control Center
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">
-            {store?.name || 'Your Store'}
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <div className="flex items-center space-x-3">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{store?.name}</h1>
+            <span
+              className={`text-xs uppercase font-extrabold px-3 py-0.5 rounded-full border ${
+                isApproved
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : isPending
+                  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                  : 'bg-red-50 text-red-700 border-red-200'
+              }`}
+            >
+              {store?.approvalStatus}
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-1">
             Store Slug: <code className="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-xs">{store?.slug}</code> · Vendor Account: <strong className="text-slate-700">{user?.email}</strong>
           </p>
         </div>
@@ -154,7 +174,10 @@ export const VendorDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
+        <Link
+          to="/vendor/products"
+          className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4 hover:border-blue-300 transition"
+        >
           <div className="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
             <Package className="w-6 h-6" />
           </div>
@@ -162,17 +185,20 @@ export const VendorDashboard = () => {
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Products</span>
             <p className="text-xl font-bold text-slate-900">{productsCount}</p>
           </div>
-        </div>
+        </Link>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
+        <Link
+          to="/vendor/orders"
+          className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4 hover:border-amber-300 transition"
+        >
           <div className="w-12 h-12 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
             <Clock className="w-6 h-6" />
           </div>
           <div>
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending Orders</span>
-            <p className="text-xl font-bold text-slate-900">0</p>
+            <p className="text-xl font-bold text-slate-900">{pendingOrdersCount}</p>
           </div>
-        </div>
+        </Link>
 
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
           <div className="w-12 h-12 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
@@ -180,18 +206,18 @@ export const VendorDashboard = () => {
           </div>
           <div>
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Gross Sales</span>
-            <p className="text-xl font-bold text-slate-900">₹0.00</p>
+            <p className="text-xl font-bold text-slate-900">₹{grossSales.toLocaleString('en-IN')}</p>
           </div>
         </div>
       </div>
 
       {/* Quick Action Navigation */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-900">Store Products</h2>
             <Link to="/vendor/products" className="text-xs font-semibold text-emerald-600 hover:underline">
-              View All ({productsCount})
+              View ({productsCount})
             </Link>
           </div>
           <p className="text-xs text-slate-500">
@@ -203,6 +229,26 @@ export const VendorDashboard = () => {
               className="inline-block px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition"
             >
               Open Inventory Manager
+            </Link>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-slate-900">Order Fulfillment</h2>
+            <Link to="/vendor/orders" className="text-xs font-semibold text-blue-600 hover:underline">
+              Orders ({pendingOrdersCount} pending)
+            </Link>
+          </div>
+          <p className="text-xs text-slate-500">
+            Package items, assign carrier tracking numbers, and fulfill orders containing your products.
+          </p>
+          <div className="pt-2">
+            <Link
+              to="/vendor/orders"
+              className="inline-block px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold transition"
+            >
+              Fulfill Customer Orders
             </Link>
           </div>
         </div>

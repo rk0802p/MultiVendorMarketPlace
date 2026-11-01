@@ -1,14 +1,18 @@
 import app from './app.js';
 import { config } from './config/environment.js';
 import { connectDatabase } from './config/database.js';
+import { getRedisClient, closeRedisConnection } from './config/redis.js';
 import { checkElasticConnection, ensureProductIndex, closeElasticConnection } from './config/elasticsearch.js';
 
 const startServer = async () => {
   try {
-    // Connect to database
+    // Connect to primary MongoDB database
     await connectDatabase();
 
-    // Initialize Elasticsearch
+    // Initialize Redis cache client
+    await getRedisClient();
+
+    // Initialize Elasticsearch search engine
     await checkElasticConnection();
     await ensureProductIndex();
 
@@ -22,6 +26,7 @@ const startServer = async () => {
     // Graceful shutdown handling
     const shutdown = async () => {
       console.log('[Server] Gracefully shutting down...');
+      await closeRedisConnection();
       await closeElasticConnection();
       server.close(() => {
         console.log('[Server] HTTP server closed.');
