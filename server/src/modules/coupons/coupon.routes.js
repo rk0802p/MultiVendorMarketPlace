@@ -1,57 +1,36 @@
 import { Router } from 'express';
-import { ApiResponse } from '../../utils/apiResponse.js';
+import { authenticate, optionalAuthenticate } from '../../middleware/authenticate.js';
+import { authorize } from '../../middleware/authorize.js';
+import { CouponController } from './coupon.controller.js';
 
 const router = Router();
 
 /**
  * @route   POST /api/coupons/validate
  * @desc    Validate coupon code against current cart subtotal
- * @access  Private (Customer)
+ * @access  Public / Customer
  */
-router.post('/validate', (req, res) => {
-  return ApiResponse.success(res, {
-    message: 'Coupon is valid (Contract Defined)',
-    data: {
-      code: req.body.code || 'SAVE10',
-      type: 'percentage',
-      value: 10,
-      discountCalculated: 300,
-    },
-  });
-});
+router.post('/validate', optionalAuthenticate, CouponController.validate);
 
 /**
  * @route   GET /api/coupons
  * @desc    List marketplace coupons
- * @access  Private (Admin)
+ * @access  Private (Admin Only)
  */
-router.get('/', (req, res) => {
-  return ApiResponse.success(res, {
-    message: 'Coupons retrieved (Contract Defined)',
-    data: {
-      coupons: [],
-    },
-  });
-});
+router.get('/', authenticate, authorize('admin'), CouponController.list);
 
 /**
  * @route   POST /api/coupons
  * @desc    Create promotional coupon
- * @access  Private (Admin)
+ * @access  Private (Admin Only)
  */
-router.post('/', (req, res) => {
-  return ApiResponse.success(res, {
-    statusCode: 201,
-    message: 'Coupon created successfully (Contract Defined)',
-    data: {
-      coupon: {
-        code: req.body.code || 'FESTIVE20',
-        type: req.body.type || 'percentage',
-        value: req.body.value || 20,
-        isActive: true,
-      },
-    },
-  });
-});
+router.post('/', authenticate, authorize('admin'), CouponController.create);
+
+/**
+ * @route   PATCH /api/coupons/:id/toggle
+ * @desc    Toggle coupon active status
+ * @access  Private (Admin Only)
+ */
+router.patch('/:id/toggle', authenticate, authorize('admin'), CouponController.toggle);
 
 export default router;

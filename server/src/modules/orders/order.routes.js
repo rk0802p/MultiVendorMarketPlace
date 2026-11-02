@@ -39,6 +39,13 @@ router.patch(
 );
 
 /**
+ * @route   GET /api/orders/:id/invoice
+ * @desc    Generate and stream PDF tax invoice
+ * @access  Private (Customer / Admin)
+ */
+router.get('/:id/invoice', optionalAuthenticate, OrderController.getInvoice);
+
+/**
  * @route   GET /api/orders/:id
  * @desc    Retrieve single order details (Customer, Vendor, Admin)
  * @access  Private

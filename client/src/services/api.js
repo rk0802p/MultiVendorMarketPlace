@@ -178,6 +178,11 @@ export const orderService = {
     });
     return res.data;
   },
+
+  getInvoiceUrl(orderId) {
+    const baseURL = import.meta.env.VITE_API_BASE_URL || '/api';
+    return `${baseURL}/orders/${orderId}/invoice`;
+  },
 };
 
 export const paymentService = {
@@ -193,6 +198,62 @@ export const paymentService = {
 
   async getCommissionLedger(params = {}) {
     const res = await api.get('/payments/ledger', { params });
+    return res.data;
+  },
+};
+
+export const reviewService = {
+  async getProductReviews(productId, params = {}) {
+    const res = await api.get(`/reviews/product/${productId}`, { params });
+    return res.data;
+  },
+
+  async checkEligibility(productId) {
+    const res = await api.get(`/reviews/product/${productId}/eligibility`);
+    return res.data;
+  },
+
+  async submitReview(productId, data) {
+    const res = await api.post(`/reviews/product/${productId}`, data);
+    return res.data;
+  },
+};
+
+export const couponService = {
+  async validateCoupon(code, cartSubtotal) {
+    const res = await api.post('/coupons/validate', { code, cartSubtotal });
+    return res.data;
+  },
+
+  async getAllCoupons() {
+    const res = await api.get('/coupons');
+    return res.data;
+  },
+
+  async createCoupon(data) {
+    const res = await api.post('/coupons', data);
+    return res.data;
+  },
+
+  async toggleCoupon(id) {
+    const res = await api.patch(`/coupons/${id}/toggle`);
+    return res.data;
+  },
+};
+
+export const adminService = {
+  async getAnalytics() {
+    const res = await api.get('/admin/analytics');
+    return res.data;
+  },
+
+  async getOrders(params = {}) {
+    const res = await api.get('/admin/orders', { params });
+    return res.data;
+  },
+
+  async getUsers(params = {}) {
+    const res = await api.get('/admin/users', { params });
     return res.data;
   },
 };

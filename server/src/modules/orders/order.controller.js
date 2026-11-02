@@ -1,5 +1,6 @@
 import { OrderService } from './order.service.js';
 import { ApiResponse } from '../../utils/apiResponse.js';
+import { InvoiceGenerator } from '../../utils/invoiceGenerator.js';
 
 export class OrderController {
   /**
@@ -57,6 +58,20 @@ export class OrderController {
         message: 'Order details retrieved successfully',
         data: { order },
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/orders/:id/invoice
+   * Customer or Admin downloads PDF tax invoice
+   */
+  static async getInvoice(req, res, next) {
+    try {
+      const user = req.user || { role: 'customer', id: 'guest' };
+      const order = await OrderService.getOrderById(req.params.id, user);
+      InvoiceGenerator.generate(order, res);
     } catch (error) {
       next(error);
     }

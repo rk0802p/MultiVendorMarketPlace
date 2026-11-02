@@ -127,3 +127,21 @@
   - Failed payment webhook handling transitions payment and order statuses to `failed`.
   - Admin commission ledger oversight endpoint `/api/payments/ledger` calculates GTV and total commission earnings.
   - RBAC protection: Customer access to admin financial ledger is strictly forbidden (`403 Forbidden`).
+
+### Step 7: Verified Reviews, Promo Coupons, PDF Invoices & Admin Analytics Verification
+- **Test File**: `server/test/step7.reviews-coupons.test.js`
+- **Runner**: Vitest v3.2.7 + Supertest v7.0.0
+- **Results**: 13 / 13 tests passed (100%)
+  - Verified Buyer constraint: Customers who have not purchased a product are blocked with `403 Forbidden` (`Verified Buyer Required`).
+  - Verified purchasers successfully submit reviews with rating (1-5 integer) and comments (`201 Created`).
+  - Duplicate reviews by the same customer for the same product rejected with `409 Conflict`.
+  - Public retrieval of reviews with rating breakdown (1-5 distribution) and computed average rating.
+  - Review eligibility endpoint checks verified purchase status before allowing review form submission.
+  - Dynamic recalculation of `Product.averageRating` and `Product.reviewCount` upon review creation and Elasticsearch synchronization.
+  - Coupon validation: Percentage discounts and fixed amount promo codes accurately evaluated against cart subtotals.
+  - Minimum cart spend requirements enforced (requests below threshold rejected with `400 Bad Request`).
+  - Admin-only promo coupon creation (`POST /api/coupons`) and non-admin rejection (`403 Forbidden`).
+  - Coupon application during atomic checkout: applies discount to `totals.discount` and records `appliedCoupon` snapshot.
+  - PDF tax invoice generation via PDFKit with professional multi-vendor line items, customer address, and tax summary streamed with `Content-Type: application/pdf`.
+  - Admin marketplace analytics aggregation: real-time computation of gross sales, platform commission revenue, vendor payouts, and product counts.
+  - Platform-wide admin order oversight and user directory endpoints with pagination.

@@ -2,7 +2,9 @@ import { Order } from '../../models/Order.js';
 import { Payment } from '../../models/Payment.js';
 import { Product } from '../../models/Product.js';
 import { Store } from '../../models/Store.js';
+import { Coupon } from '../../models/Coupon.js';
 import { CartService } from '../cart/cart.service.js';
+import { CouponService } from '../coupons/coupon.service.js';
 import { ProductSearchService } from '../products/product.search.service.js';
 
 export class OrderService {
@@ -10,7 +12,7 @@ export class OrderService {
    * Concurrency-safe atomic checkout and order creation with multi-vendor commission calculation
    */
   static async checkoutOrder(customerId, data = {}) {
-    const { shippingAddress, items: directItems } = data;
+    const { shippingAddress, items: directItems, couponCode } = data;
 
     // 1. Resolve checkout items: either passed directly or hydrated from customer's Redis cart
     let itemsToProcess = [];
@@ -165,6 +167,26 @@ export class OrderService {
 
     const orderNumber = `ORD-${Date.now().toString().slice(-8)}-${Math.floor(1000 + Math.random() * 9000)}`;
 
+    // 4b. Evaluate promo coupon if provided
+    let discountAmount = 0;
+    let appliedCouponData = undefined;
+
+    if (couponCode && typeof couponCode === 'string') {
+      const couponResult = await CouponService.validateCoupon(couponCode, subtotal);
+      discountAmount = couponResult.discountCalculated || 0;
+      appliedCouponData = {
+        couponId: couponResult.couponId,
+        code: couponResult.code,
+        discountAmount,
+      };
+
+      if (couponResult.couponId) {
+        await Coupon.findByIdAndUpdate(couponResult.couponId, { $inc: { usageCount: 1 } });
+      }
+    }
+
+    const grandTotal = Math.max(0, subtotal - discountAmount);
+
     const order = new Order({
       orderNumber,
       customerId,
@@ -172,11 +194,12 @@ export class OrderService {
       shippingAddress: resolvedAddress,
       totals: {
         subtotal,
-        discount: 0,
+        discount: discountAmount,
         shipping: 0,
         tax: 0,
-        grandTotal: subtotal,
+        grandTotal,
       },
+      appliedCoupon: appliedCouponData,
       paymentStatus: 'pending',
       overallStatus: 'placed',
     });
@@ -223,7 +246,7 @@ export class OrderService {
       customerId,
       provider: 'razorpay',
       providerOrderId: `order_prov_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`,
-      amount: subtotal,
+      amount: grandTotal,
       currency: 'INR',
       platformCommissionPercentage,
       totalCommissionAmount,

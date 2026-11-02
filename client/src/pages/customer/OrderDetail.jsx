@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   MapPin,
   Check,
+  FileText,
 } from 'lucide-react';
 
 export const OrderDetail = () => {
@@ -128,13 +129,25 @@ export const OrderDetail = () => {
           </p>
         </div>
 
-        <div className="text-left md:text-right">
-          <span className="text-xs text-slate-400 uppercase font-bold tracking-wider block">
-            Grand Total
-          </span>
-          <span className="text-3xl font-black text-slate-900">
-            ₹{order.totals?.grandTotal?.toLocaleString('en-IN')}
-          </span>
+        <div className="text-left md:text-right flex flex-col md:items-end space-y-2">
+          <div>
+            <span className="text-xs text-slate-400 uppercase font-bold tracking-wider block">
+              Grand Total
+            </span>
+            <span className="text-3xl font-black text-slate-900">
+              ₹{order.totals?.grandTotal?.toLocaleString('en-IN')}
+            </span>
+          </div>
+
+          <a
+            href={orderService.getInvoiceUrl(order._id || order.orderNumber)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center space-x-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-sm"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Download Invoice (PDF)</span>
+          </a>
         </div>
       </div>
 
@@ -265,6 +278,14 @@ export const OrderDetail = () => {
                   ₹{order.totals?.subtotal?.toLocaleString('en-IN')}
                 </span>
               </div>
+              {(order.totals?.discount > 0 || order.appliedCoupon?.discountAmount > 0) && (
+                <div className="flex justify-between text-emerald-600 font-semibold">
+                  <span>Coupon Discount ({order.appliedCoupon?.code || 'PROMO'})</span>
+                  <span>
+                    - ₹{(order.totals?.discount || order.appliedCoupon?.discountAmount).toLocaleString('en-IN')}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span>Shipping Fee</span>
                 <span className="font-semibold text-emerald-600">Free</span>

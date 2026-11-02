@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { orderService, paymentService } from '../../services/api.js';
+import { orderService, paymentService, couponService } from '../../services/api.js';
 import {
   ShieldCheck,
   Truck,
@@ -12,6 +12,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Package,
+  Tag,
+  X,
 } from 'lucide-react';
 
 export const Checkout = () => {
@@ -33,11 +35,42 @@ export const Checkout = () => {
     phone: '',
   });
 
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const discountAmount = appliedCoupon?.discountCalculated || 0;
+  const grandTotal = Math.max(0, subtotal - discountAmount);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleApplyCoupon = async (e) => {
+    e.preventDefault();
+    if (!couponCode.trim()) return;
+    setCouponError('');
+    setCouponLoading(true);
+    try {
+      const res = await couponService.validateCoupon(couponCode, subtotal);
+      if (res.success && res.data) {
+        setAppliedCoupon(res.data);
+      }
+    } catch (err) {
+      setCouponError(err.response?.data?.message || 'Invalid coupon code.');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError('');
   };
 
   const handlePlaceOrder = async (e) => {
@@ -55,16 +88,17 @@ export const Checkout = () => {
       // 1. Concurrency-Safe Order Creation & Inventory Decrement
       const res = await orderService.checkout({
         shippingAddress: formData,
+        couponCode: appliedCoupon?.code,
       });
 
       if (res.success && res.data) {
         const orderId = res.data.orderId || res.data.orderNumber;
-        const grandTotal = res.data.totals?.grandTotal || subtotal;
+        const totalToPay = res.data.totals?.grandTotal || grandTotal;
 
         // 2. Initialize Razorpay Payment Order (Paise Conversion)
         const pRes = await paymentService.createPaymentOrder({
           orderId,
-          amount: grandTotal,
+          amount: totalToPay,
         });
 
         if (pRes.success && pRes.data) {
@@ -321,12 +355,64 @@ export const Checkout = () => {
               ))}
             </div>
 
+            {/* Promo Coupon Section */}
+            <div className="border-t border-slate-200 pt-3 space-y-2">
+              <label className="block text-xs font-bold text-slate-700">Promo Code / Coupon</label>
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs">
+                  <div className="flex items-center space-x-2 text-emerald-800 font-bold">
+                    <Tag className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>{appliedCoupon.code}</span>
+                    <span className="text-[10px] font-normal text-emerald-700">
+                      (-₹{discountAmount.toLocaleString('en-IN')})
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoupon}
+                    className="text-slate-400 hover:text-red-500 transition"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      placeholder="e.g. SAVE10"
+                      className="flex-1 px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs uppercase font-semibold focus:outline-none focus:border-blue-600"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      disabled={couponLoading || !couponCode.trim()}
+                      className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition disabled:opacity-50"
+                    >
+                      {couponLoading ? '...' : 'Apply'}
+                    </button>
+                  </div>
+                  {couponError && (
+                    <p className="text-[11px] text-red-600 mt-1">{couponError}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="space-y-2 text-sm border-t border-slate-200 pt-3">
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-slate-600 text-xs">
                 <span>Subtotal</span>
                 <span className="font-semibold text-slate-900">₹{subtotal.toLocaleString('en-IN')}</span>
               </div>
-              <div className="flex justify-between text-slate-600">
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-emerald-600 text-xs font-semibold">
+                  <span>Coupon Discount ({appliedCoupon?.code})</span>
+                  <span>- ₹{discountAmount.toLocaleString('en-IN')}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-slate-600 text-xs">
                 <span>Shipping</span>
                 <span className="font-semibold text-emerald-600">Free</span>
               </div>
@@ -335,7 +421,7 @@ export const Checkout = () => {
             <div className="flex justify-between items-baseline border-t border-slate-200 pt-3">
               <span className="text-base font-bold text-slate-900">Total</span>
               <span className="text-2xl font-black text-slate-900">
-                ₹{subtotal.toLocaleString('en-IN')}
+                ₹{grandTotal.toLocaleString('en-IN')}
               </span>
             </div>
 
