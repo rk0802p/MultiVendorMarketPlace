@@ -6,7 +6,7 @@ const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: config.env === 'production',
   sameSite: 'lax',
-  maxAge: config.jwt.cookieExpiresInDays * 24 * 60 * 60 * 1000,
+  maxAge: config.jwt.cookieMaxAgeMs,
 };
 
 export class AuthController {

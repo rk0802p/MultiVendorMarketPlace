@@ -1,30 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { vendorService } from '../../services/api.js';
-import { ShieldCheck, Users, Store, DollarSign, Activity, Check, X, AlertCircle } from 'lucide-react';
+import { vendorService, paymentService } from '../../services/api.js';
+import { ShieldCheck, Users, Store, DollarSign, Activity, Check, X, AlertCircle, ArrowUpRight } from 'lucide-react';
 
 export const AdminDashboard = () => {
   const { user } = useAuth();
   const [pendingStores, setPendingStores] = useState([]);
+  const [ledger, setLedger] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState('');
   const [error, setError] = useState('');
 
-  const fetchPendingStores = async () => {
+  const fetchAdminData = async () => {
     try {
-      const res = await vendorService.getStores({ status: 'pending' });
-      if (res.success && res.data.stores) {
-        setPendingStores(res.data.stores);
+      setLoading(true);
+      const [storeRes, ledgerRes] = await Promise.all([
+        vendorService.getStores({ status: 'pending' }),
+        paymentService.getCommissionLedger().catch(() => null),
+      ]);
+
+      if (storeRes.success && storeRes.data.stores) {
+        setPendingStores(storeRes.data.stores);
+      }
+      if (ledgerRes && ledgerRes.success && ledgerRes.data) {
+        setLedger(ledgerRes.data);
       }
     } catch (err) {
-      console.error('Failed to load pending stores:', err);
+      console.error('Failed to load admin data:', err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPendingStores();
+    fetchAdminData();
   }, []);
 
   const handleStatusUpdate = async (storeId, status, name) => {
@@ -34,11 +43,19 @@ export const AdminDashboard = () => {
       const res = await vendorService.updateStoreStatus(storeId, status);
       if (res.success) {
         setActionMessage(`Store "${name}" has been ${status}!`);
-        fetchPendingStores();
+        fetchAdminData();
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update store status.');
     }
+  };
+
+  const metrics = ledger?.metrics || {
+    totalGtv: 0,
+    totalCommissionEarned: 0,
+    totalVendorPayouts: 0,
+    capturedPaymentsCount: 0,
+    platformCommissionRate: 10,
   };
 
   return (
@@ -84,7 +101,7 @@ export const AdminDashboard = () => {
           </div>
           <div>
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Gross Platform GMV</span>
-            <p className="text-xl font-bold text-slate-900">₹3,50,000</p>
+            <p className="text-xl font-bold text-slate-900">₹{metrics.totalGtv.toLocaleString('en-IN')}</p>
           </div>
         </div>
 
@@ -93,8 +110,8 @@ export const AdminDashboard = () => {
             <Activity className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Commission (10%)</span>
-            <p className="text-xl font-bold text-slate-900">₹35,000</p>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Commission ({metrics.platformCommissionRate}%)</span>
+            <p className="text-xl font-bold text-slate-900">₹{metrics.totalCommissionEarned.toLocaleString('en-IN')}</p>
           </div>
         </div>
 
@@ -103,8 +120,8 @@ export const AdminDashboard = () => {
             <Store className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Stores</span>
-            <p className="text-xl font-bold text-slate-900">18</p>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Vendor Net Payouts</span>
+            <p className="text-xl font-bold text-slate-900">₹{metrics.totalVendorPayouts.toLocaleString('en-IN')}</p>
           </div>
         </div>
 
@@ -172,15 +189,19 @@ export const AdminDashboard = () => {
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-          <h2 className="text-lg font-bold text-slate-900">Platform Commission Rules</h2>
+          <h2 className="text-lg font-bold text-slate-900">Platform Commission Rules & Payouts</h2>
           <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-sm text-slate-600">
             <div className="flex justify-between items-center py-1 border-b border-slate-200/60">
               <span>Standard Platform Commission:</span>
-              <strong className="text-slate-900 font-bold">10.00%</strong>
+              <strong className="text-slate-900 font-bold">{metrics.platformCommissionRate}.00%</strong>
             </div>
             <div className="flex justify-between items-center py-1 border-b border-slate-200/60">
               <span>Payout Accounting:</span>
               <strong className="text-slate-900 font-bold">Automated at Checkout</strong>
+            </div>
+            <div className="flex justify-between items-center py-1 border-b border-slate-200/60">
+              <span>Captured Transactions:</span>
+              <strong className="text-slate-900 font-bold">{metrics.capturedPaymentsCount} Payments</strong>
             </div>
             <div className="flex justify-between items-center py-1">
               <span>Payment Gateway:</span>

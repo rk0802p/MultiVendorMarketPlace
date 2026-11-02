@@ -22,6 +22,7 @@ export const OrderDetail = () => {
   const [error, setError] = useState('');
 
   const justCreated = location.state?.orderCreated;
+  const paymentSuccess = location.state?.paymentSuccess;
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -101,9 +102,10 @@ export const OrderDetail = () => {
         <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center space-x-3 text-emerald-900">
           <CheckCircle2 className="w-6 h-6 text-emerald-600 flex-shrink-0" />
           <div>
-            <h4 className="font-bold text-sm">Thank you! Your order has been placed successfully.</h4>
+            <h4 className="font-bold text-sm">Thank you! Your order has been placed and payment confirmed.</h4>
             <p className="text-xs text-emerald-700">
-              Order #{order.orderNumber} is now assigned to the respective vendors for independent fulfillment.
+              Order #{order.orderNumber} is paid and assigned to the respective vendors for independent fulfillment.
+              {paymentSuccess && ' Razorpay payment verified with platform commission recorded.'}
             </p>
           </div>
         </div>

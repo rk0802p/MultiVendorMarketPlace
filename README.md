@@ -89,7 +89,7 @@ At checkout:
 - [x] **Step 3**: Vendor onboarding & approval workflows; Product CRUD & AWS S3 presigned uploads.
 - [x] **Step 4**: Elasticsearch indexing, full-text search, multi-faceted filtering, and sorting.
 - [x] **Step 5**: Redis-backed cart, atomic checkout with concurrency-safe stock decrement, and multi-vendor order lifecycle (`placed` → `packed` → `shipped` → `delivered`).
-- [ ] **Step 6**: Razorpay test mode integration, signature validation, commission ledger, and idempotent webhooks.
+- [x] **Step 6**: Razorpay test mode integration, signature validation, commission ledger, and idempotent webhooks.
 - [ ] **Step 7**: Verified-buyer reviews, promo coupons, PDF invoice generation, and admin analytics dashboard.
 - [ ] **Step 8 (Final Deliverables & Verification)**: End-to-end integration testing, security hardening, cloud deployment (Render + Vercel + MongoDB Atlas), and final demo submission.
 

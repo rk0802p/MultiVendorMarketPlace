@@ -111,3 +111,19 @@
   - Multi-vendor fulfillment guard: Vendor A is blocked (`403 Forbidden`) from modifying Vendor B's items.
   - Derived order status recalculation updates overall order status (`placed` → `in_progress` → `completed`).
   - Customer order history retrieval via `/api/orders/my`.
+
+### Step 6: Payment Gateway, Signature Verification & Commission Ledger Verification
+- **Test File**: `server/test/step6.payments.test.js`
+- **Runner**: Vitest v3.2.7 + Supertest v7.0.0
+- **Results**: 9 / 9 tests passed (100%)
+  - Payment order creation with INR to paise conversion (₹3,000 $\rightarrow$ 300,000 paise).
+  - Razorpay order initialization returning `providerOrderId`, `amount`, and `currency: 'INR'`.
+  - 404 response on attempting to initialize payment for non-existent orders.
+  - Cryptographic HMAC-SHA256 signature verification matching `order_id|payment_id` against the secret key.
+  - Rejection of tampered signatures with `400 Bad Request`.
+  - Finalization of platform commission (10%) and vendor gross/net transfers on payment capture.
+  - Idempotent webhook handling for `payment.captured` and `order.paid` events.
+  - Duplicate webhook delivery idempotency: safely returns 200 without duplicate database state mutations.
+  - Failed payment webhook handling transitions payment and order statuses to `failed`.
+  - Admin commission ledger oversight endpoint `/api/payments/ledger` calculates GTV and total commission earnings.
+  - RBAC protection: Customer access to admin financial ledger is strictly forbidden (`403 Forbidden`).

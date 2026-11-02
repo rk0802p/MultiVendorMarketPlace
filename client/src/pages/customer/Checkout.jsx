@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { orderService } from '../../services/api.js';
+import { orderService, paymentService } from '../../services/api.js';
 import {
   ShieldCheck,
   Truck,
@@ -51,15 +51,75 @@ export const Checkout = () => {
 
     try {
       setLoading(true);
+
+      // 1. Concurrency-Safe Order Creation & Inventory Decrement
       const res = await orderService.checkout({
         shippingAddress: formData,
       });
 
       if (res.success && res.data) {
-        await fetchCart(); // Refresh cart to empty state
-        navigate(`/orders/${res.data.orderId || res.data.orderNumber}`, {
-          state: { orderCreated: true, orderNumber: res.data.orderNumber },
+        const orderId = res.data.orderId || res.data.orderNumber;
+        const grandTotal = res.data.totals?.grandTotal || subtotal;
+
+        // 2. Initialize Razorpay Payment Order (Paise Conversion)
+        const pRes = await paymentService.createPaymentOrder({
+          orderId,
+          amount: grandTotal,
         });
+
+        if (pRes.success && pRes.data) {
+          const { providerOrderId, keyId, amount, currency } = pRes.data;
+
+          // 3. Complete Razorpay checkout flow
+          const isRealRzpAvailable = typeof window !== 'undefined' && window.Razorpay;
+
+          if (isRealRzpAvailable && keyId && keyId !== 'rzp_test_mock_key') {
+            const rzpOptions = {
+              key: keyId,
+              amount,
+              currency,
+              name: 'TechMart Multi-Vendor Marketplace',
+              description: `Payment for Order #${res.data.orderNumber}`,
+              order_id: providerOrderId,
+              prefill: {
+                name: formData.fullName,
+                email: user?.email,
+                contact: formData.phone,
+              },
+              handler: async (response) => {
+                await paymentService.verifyPayment({
+                  orderId,
+                  razorpayOrderId: response.razorpay_order_id,
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  razorpaySignature: response.razorpay_signature,
+                });
+                await fetchCart();
+                navigate(`/orders/${orderId}`, {
+                  state: { orderCreated: true, paymentSuccess: true, orderNumber: res.data.orderNumber },
+                });
+              },
+              theme: { color: '#2563eb' },
+            };
+            const rzp = new window.Razorpay(rzpOptions);
+            rzp.open();
+          } else {
+            // Simulated Test Mode Verification (Instant Test Confirmation)
+            const testPaymentId = `pay_rzp_test_${Date.now()}`;
+            const testSignature = `simulated_signature_${providerOrderId}_${testPaymentId}`;
+
+            await paymentService.verifyPayment({
+              orderId,
+              razorpayOrderId: providerOrderId,
+              razorpayPaymentId: testPaymentId,
+              razorpaySignature: testSignature,
+            });
+
+            await fetchCart();
+            navigate(`/orders/${orderId}`, {
+              state: { orderCreated: true, paymentSuccess: true, orderNumber: res.data.orderNumber },
+            });
+          }
+        }
       }
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Checkout failed. Please try again.';

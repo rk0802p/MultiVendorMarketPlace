@@ -180,4 +180,21 @@ export const orderService = {
   },
 };
 
+export const paymentService = {
+  async createPaymentOrder(data) {
+    const res = await api.post('/payments/create-order', data);
+    return res.data;
+  },
+
+  async verifyPayment(data) {
+    const res = await api.post('/payments/verify', data);
+    return res.data;
+  },
+
+  async getCommissionLedger(params = {}) {
+    const res = await api.get('/payments/ledger', { params });
+    return res.data;
+  },
+};
+
 export default api;

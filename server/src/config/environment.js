@@ -18,8 +18,8 @@ export const config = {
 
   jwt: {
     secret: process.env.JWT_SECRET || 'dev_super_secret_jwt_key_at_least_32_characters_long',
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-    cookieExpiresInDays: parseInt(process.env.JWT_COOKIE_EXPIRES_IN_DAYS, 10) || 7,
+    expiresIn: process.env.JWT_EXPIRES_IN || '168h',
+    cookieMaxAgeMs: 604800000, // 168 hours in milliseconds
   },
 
   elasticsearch: {
