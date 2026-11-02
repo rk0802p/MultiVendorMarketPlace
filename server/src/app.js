@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
 import { config } from './config/environment.js';
 import { ApiResponse } from './utils/apiResponse.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -33,6 +34,35 @@ app.use(morgan(config.env === 'development' ? 'dev' : 'combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Rate Limiting Security Hardening
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
+  message: {
+    success: false,
+    message: 'Too many requests from this client. Please retry after 15 minutes.',
+  },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
+  message: {
+    success: false,
+    message: 'Too many authentication attempts. Please retry after 15 minutes.',
+  },
+});
+
+app.use(globalLimiter);
+app.use(`${config.apiPrefix}/auth/login`, authLimiter);
+app.use(`${config.apiPrefix}/auth/register`, authLimiter);
 
 // Base healthcheck route
 app.get('/health', (req, res) => {

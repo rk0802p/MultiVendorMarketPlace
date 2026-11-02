@@ -91,7 +91,7 @@ At checkout:
 - [x] **Step 5**: Redis-backed cart, atomic checkout with concurrency-safe stock decrement, and multi-vendor order lifecycle (`placed` → `packed` → `shipped` → `delivered`).
 - [x] **Step 6**: Razorpay test mode integration, signature validation, commission ledger, and idempotent webhooks.
 - [x] **Step 7**: Verified-buyer reviews, promo coupons, PDF invoice generation, and admin analytics dashboard.
-- [ ] **Step 8 (Final Deliverables & Verification)**: End-to-end integration testing, security hardening, cloud deployment (Render + Vercel + MongoDB Atlas), and final demo submission.
+- [x] **Step 8 (Final Deliverables & Verification)**: End-to-end integration testing, security hardening, cloud deployment (Render + Vercel + MongoDB Atlas), and final demo submission.
 
 ---
 
@@ -122,7 +122,13 @@ At checkout:
    npm run install:all
    ```
 
-4. **Start Development Servers:**
+4. **Seed Demonstration Data (Optional):**
+   ```bash
+   npm --prefix server run seed
+   ```
+   Seeds Admin (`admin@techmart.local` / `AdminPass123!`), 2 approved vendor stores, products with Unsplash imagery, coupons (`SAVE10`, `TECH100`, `FESTIVE500`), and sample verified customer orders.
+
+5. **Start Development Servers:**
    ```bash
    # In terminal 1 (Backend API on port 5000):
    npm run dev:server
@@ -131,6 +137,8 @@ At checkout:
    npm run dev:client
    ```
 
-5. **Verify Installation:**
+6. **Verify Installation & Cloud Deployment:**
    - Healthcheck: `http://localhost:5000/health`
    - Storefront UI: `http://localhost:5173`
+   - Production Cloud Deployment Guide: [`docs/deployment-guide.md`](file:///docs/deployment-guide.md)
+   - Comprehensive Test Report (103 Tests): [`docs/test-report.md`](file:///docs/test-report.md)
