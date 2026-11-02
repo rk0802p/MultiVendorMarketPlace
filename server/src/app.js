@@ -24,9 +24,26 @@ const app = express();
 
 // Security and utility middleware
 app.use(helmet());
+// Flexible CORS for Local, Render & Vercel Preview/Production Domains
+const allowedOrigins = [
+  config.clientUrl,
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
 app.use(
   cors({
-    origin: config.clientUrl,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const isConfiguredUrl = origin === config.clientUrl || origin.replace(/\/$/, '') === config.clientUrl.replace(/\/$/, '');
+      const isVercelDomain = origin.endsWith('.vercel.app');
+      const isAllowedLocal = allowedOrigins.includes(origin);
+
+      if (isConfiguredUrl || isVercelDomain || isAllowedLocal) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   })
 );

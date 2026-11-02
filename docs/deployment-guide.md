@@ -83,19 +83,29 @@ The marketplace is architected as a **Modular Monolith** with separated cloud in
 
 ### 3.2 Frontend Deployment (Vercel)
 
-1. **Import Project**:
-   - Select the GitHub repository on Vercel.
-2. **Project Settings**:
-   - **Root Directory**: `client`
-   - **Framework Preset**: Vite
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
+The repository supports **two seamless Vercel deployment modes**:
+
+#### Option A: Zero-Config Root Deployment (Recommended)
+1. **Import Repository**: In the Vercel dashboard, click **Add New** $\rightarrow$ **Project** and select this repository (`master` branch).
+2. **Leave Root Directory as `./` (Default)**:
+   - Root [`vercel.json`](file:///vercel.json) automatically executes `npm --prefix client install && npm --prefix client run build` and sets the output directory to `client/dist`.
 3. **Environment Variables**:
+   Add the following environment variable in Vercel:
    ```env
    VITE_API_BASE_URL=https://techmart-marketplace-api.onrender.com/api
    ```
-4. **SPA Client Routing**:
-   - The included [`client/vercel.json`](file:///client/vercel.json) ensures all route paths (`/products/:id`, `/checkout`, `/orders/:id`, `/vendor/dashboard`) route seamlessly to `index.html`.
+4. **Deploy**: Click **Deploy**. Vercel will build Vite and serve the single page application with full SPA client-side routing.
+
+#### Option B: Subdirectory Deployment
+1. **Import Repository**: Select this repository in Vercel.
+2. **Root Directory**: Click "Edit" and choose `client`.
+3. **Framework**: Vite is detected automatically.
+4. **Output Directory**: `dist` (default).
+5. **Environment Variables**:
+   ```env
+   VITE_API_BASE_URL=https://techmart-marketplace-api.onrender.com/api
+   ```
+6. **SPA Client Routing**: Handled by [`client/vercel.json`](file:///client/vercel.json).
 
 ---
 

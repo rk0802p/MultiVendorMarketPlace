@@ -5,7 +5,7 @@ import { config } from '../../config/environment.js';
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: config.env === 'production',
-  sameSite: 'lax',
+  sameSite: config.env === 'production' ? 'none' : 'lax',
   maxAge: config.jwt.cookieMaxAgeMs,
 };
 
