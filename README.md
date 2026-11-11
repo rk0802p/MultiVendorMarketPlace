@@ -126,7 +126,7 @@ At checkout:
    ```bash
    npm --prefix server run seed
    ```
-   Seeds Admin (`admin@techmart.local` / `AdminPass123!`), 2 approved vendor stores, products with Unsplash imagery, coupons (`SAVE10`, `TECH100`, `FESTIVE500`), and sample verified customer orders.
+   Seeds Admin (`admin@techmart.local` / `AdminPass123!`), 3 approved vendor stores, 65+ products (curated flagship electronics + live **DummyJSON** & **Fake Store API** reference products and verified reviews, with automatic offline fallback or `--curated-only`), coupons (`SAVE10`, `TECH100`, `FESTIVE500`), and sample verified customer orders.
 
 5. **Start Development Servers:**
    ```bash

@@ -21,9 +21,10 @@ const CATEGORIES = [
   'Audio & Headphones',
   'Computers & Accessories',
   'Gaming Gear',
+  'Mobile & Tablets',
   'Wearables',
   'Smart Home',
-  'Mobile & Tablets',
+  'Fashion & Lifestyle',
 ];
 
 export const ProductCatalogue = () => {
