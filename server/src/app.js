@@ -22,6 +22,9 @@ import uploadRoutes from './modules/uploads/upload.routes.js';
 
 const app = express();
 
+// Trust reverse proxy headers (Vercel / Render) for accurate rate-limiting & IPs
+app.set('trust proxy', 1);
+
 // Security and utility middleware
 app.use(helmet());
 // Flexible CORS for Local, Render & Vercel Preview/Production Domains

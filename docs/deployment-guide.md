@@ -81,31 +81,36 @@ The marketplace is architected as a **Modular Monolith** with separated cloud in
 
 ---
 
-### 3.2 Frontend Deployment (Vercel)
+### 3.2 Full-Stack Deployment on Vercel (Frontend + Backend)
 
-The repository supports **two seamless Vercel deployment modes**:
+You can deploy **both the React frontend and Express backend on Vercel** in two ways:
 
-#### Option A: Zero-Config Root Deployment (Recommended)
-1. **Import Repository**: In the Vercel dashboard, click **Add New** $\rightarrow$ **Project** and select this repository (`master` branch).
-2. **Leave Root Directory as `./` (Default)**:
-   - Root [`vercel.json`](file:///vercel.json) automatically executes `npm --prefix client install && npm --prefix client run build` and sets the output directory to `client/dist`.
-3. **Environment Variables**:
-   Add the following environment variable in Vercel:
+#### Option A: Single Unified Vercel Project (Recommended — Same Domain, Zero CORS Issues)
+1. **Import Repository**: In Vercel, click **Add New** $\rightarrow$ **Project** and select this GitHub repository (`master` branch).
+2. **Keep Root Directory as `./` (Default)**:
+   - Root [`vercel.json`](file:///vercel.json) installs both `server/` and `client/`, builds Vite into `client/dist`, routes `/api/*` and `/health` to the Express serverless function [`api/index.js`](file:///api/index.js), and serves the React SPA for all other paths.
+3. **Environment Variables** (add in Vercel Project Settings):
    ```env
-   VITE_API_BASE_URL=https://techmart-marketplace-api.onrender.com/api
+   NODE_ENV=production
+   MONGODB_URI=mongodb+srv://<user>:<password>@cluster0.mongodb.net/techmart?retryWrites=true&w=majority
+   JWT_SECRET=<strong-random-64-character-secret>
+   REDIS_URL=rediss://default:<password>@your-redis-instance.upstash.io:6379
+   RAZORPAY_KEY_ID=rzp_test_YourKeyHere
+   RAZORPAY_KEY_SECRET=YourSecretHere
+   RAZORPAY_WEBHOOK_SECRET=YourWebhookSecretHere
    ```
-4. **Deploy**: Click **Deploy**. Vercel will build Vite and serve the single page application with full SPA client-side routing.
+   *(You do **not** need `VITE_API_BASE_URL` in Option A because `client/src/services/api.js` defaults to `/api` on the same domain!)*
+4. **Deploy**: Click **Deploy**. Both storefront and API will run live under `https://<your-project>.vercel.app`.
 
-#### Option B: Subdirectory Deployment
-1. **Import Repository**: Select this repository in Vercel.
-2. **Root Directory**: Click "Edit" and choose `client`.
-3. **Framework**: Vite is detected automatically.
-4. **Output Directory**: `dist` (default).
-5. **Environment Variables**:
-   ```env
-   VITE_API_BASE_URL=https://techmart-marketplace-api.onrender.com/api
-   ```
-6. **SPA Client Routing**: Handled by [`client/vercel.json`](file:///client/vercel.json).
+#### Option B: Two Separate Vercel Projects (Standalone Backend + Standalone Frontend)
+1. **Deploy Backend Project**:
+   - Import the repo in Vercel and set **Root Directory** to `server`.
+   - [`server/vercel.json`](file:///server/vercel.json) and [`server/api/index.js`](file:///server/api/index.js) configure Express as a serverless API.
+   - Add backend env vars (`MONGODB_URI`, `JWT_SECRET`, `CLIENT_URL=https://<your-frontend>.vercel.app`, etc.) and deploy to get `https://<your-api>.vercel.app`.
+2. **Deploy Frontend Project**:
+   - Import the same repo as a second Vercel project and set **Root Directory** to `client`.
+   - [`client/vercel.json`](file:///client/vercel.json) handles Vite SPA rewrites.
+   - Add `VITE_API_BASE_URL=https://<your-api>.vercel.app/api` and deploy.
 
 ---
 

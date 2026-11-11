@@ -1,9 +1,22 @@
 {
-  "buildCommand": "npm --prefix client install && npm --prefix client run build",
+  "installCommand": "npm install && npm --prefix server install && npm --prefix client install",
+  "buildCommand": "npm --prefix client run build",
   "outputDirectory": "client/dist",
   "framework": "vite",
   "cleanUrls": true,
   "rewrites": [
+    {
+      "source": "/api",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/health",
+      "destination": "/api/index.js"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
