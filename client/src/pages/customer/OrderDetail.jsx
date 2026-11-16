@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
-import { orderService } from '../../services/api.js';
+import { orderService, paymentService } from '../../services/api.js';
 import {
   Package,
   Calendar,
@@ -13,6 +13,8 @@ import {
   MapPin,
   Check,
   FileText,
+  CreditCard,
+  AlertTriangle,
 } from 'lucide-react';
 
 export const OrderDetail = () => {
@@ -20,6 +22,7 @@ export const OrderDetail = () => {
   const location = useLocation();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [paying, setPaying] = useState(false);
   const [error, setError] = useState('');
 
   const justCreated = location.state?.orderCreated;
@@ -89,6 +92,68 @@ export const OrderDetail = () => {
     return 'upcoming';
   };
 
+  const handleRetryPayment = async () => {
+    try {
+      setPaying(true);
+      const pRes = await paymentService.createPaymentOrder({
+        orderId: order._id || order.orderNumber,
+        amount: order.totals?.grandTotal,
+      });
+
+      if (pRes.success && pRes.data) {
+        const { providerOrderId, keyId, amount, currency } = pRes.data;
+        const isRealRzpAvailable = typeof window !== 'undefined' && window.Razorpay;
+
+        if (isRealRzpAvailable && keyId && keyId !== 'rzp_test_mock_key') {
+          const rzpOptions = {
+            key: keyId,
+            amount,
+            currency,
+            name: 'TechMart Multi-Vendor Marketplace',
+            description: `Payment for Order #${order.orderNumber}`,
+            order_id: providerOrderId,
+            prefill: {
+              name: order.shippingAddress?.fullName || '',
+              contact: order.shippingAddress?.phone || '',
+            },
+            handler: async (response) => {
+              await paymentService.verifyPayment({
+                orderId: order._id,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              });
+              const updated = await orderService.getOrder(order._id);
+              if (updated.success && updated.data) {
+                setOrder(updated.data.order);
+              }
+            },
+            theme: { color: '#2563eb' },
+          };
+          const rzp = new window.Razorpay(rzpOptions);
+          rzp.open();
+        } else {
+          const testPaymentId = `pay_rzp_test_${Date.now()}`;
+          const testSignature = `simulated_signature_${providerOrderId}_${testPaymentId}`;
+          await paymentService.verifyPayment({
+            orderId: order._id,
+            razorpayOrderId: providerOrderId,
+            razorpayPaymentId: testPaymentId,
+            razorpaySignature: testSignature,
+          });
+          const updated = await orderService.getOrder(order._id);
+          if (updated.success && updated.data) {
+            setOrder(updated.data.order);
+          }
+        }
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || err.message || 'Payment retry failed.');
+    } finally {
+      setPaying(false);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <Link
@@ -100,13 +165,28 @@ export const OrderDetail = () => {
       </Link>
 
       {justCreated && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center space-x-3 text-emerald-900">
-          <CheckCircle2 className="w-6 h-6 text-emerald-600 flex-shrink-0" />
+        <div
+          className={`p-4 rounded-2xl flex items-center space-x-3 ${
+            paymentSuccess
+              ? 'bg-emerald-50 border border-emerald-200 text-emerald-900'
+              : 'bg-amber-50 border border-amber-200 text-amber-900'
+          }`}
+        >
+          {paymentSuccess ? (
+            <CheckCircle2 className="w-6 h-6 text-emerald-600 flex-shrink-0" />
+          ) : (
+            <AlertTriangle className="w-6 h-6 text-amber-600 flex-shrink-0" />
+          )}
           <div>
-            <h4 className="font-bold text-sm">Thank you! Your order has been placed and payment confirmed.</h4>
-            <p className="text-xs text-emerald-700">
-              Order #{order.orderNumber} is paid and assigned to the respective vendors for independent fulfillment.
-              {paymentSuccess && ' Razorpay payment verified with platform commission recorded.'}
+            <h4 className="font-bold text-sm">
+              {paymentSuccess
+                ? 'Thank you! Your order has been placed and payment confirmed.'
+                : 'Order Recorded (Payment Incomplete)'}
+            </h4>
+            <p className="text-xs">
+              {paymentSuccess
+                ? `Order #${order.orderNumber} is paid and assigned to the respective vendors for independent fulfillment. Razorpay payment verified with platform commission recorded.`
+                : `Order #${order.orderNumber} has been created and reserved in our system. You can complete payment below at any time.`}
             </p>
           </div>
         </div>
@@ -139,15 +219,28 @@ export const OrderDetail = () => {
             </span>
           </div>
 
-          <a
-            href={orderService.getInvoiceUrl(order._id || order.orderNumber)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center space-x-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-sm"
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Download Invoice (PDF)</span>
-          </a>
+          <div className="flex items-center space-x-3 flex-wrap gap-2">
+            {order.paymentStatus !== 'paid' && (
+              <button
+                onClick={handleRetryPayment}
+                disabled={paying}
+                className="inline-flex items-center space-x-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50"
+              >
+                <CreditCard className="w-3.5 h-3.5" />
+                <span>{paying ? 'Opening Gateway...' : 'Pay Now / Retry Payment'}</span>
+              </button>
+            )}
+
+            <a
+              href={orderService.getInvoiceUrl(order._id || order.orderNumber)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center space-x-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-sm"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Download Invoice (PDF)</span>
+            </a>
+          </div>
         </div>
       </div>
 

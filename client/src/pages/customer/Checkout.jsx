@@ -133,6 +133,14 @@ export const Checkout = () => {
                 });
               },
               theme: { color: '#2563eb' },
+              modal: {
+                ondismiss: () => {
+                  fetchCart();
+                  navigate(`/orders/${orderId}`, {
+                    state: { orderCreated: true, paymentSuccess: false, orderNumber: res.data.orderNumber },
+                  });
+                },
+              },
             };
             const rzp = new window.Razorpay(rzpOptions);
             rzp.open();
