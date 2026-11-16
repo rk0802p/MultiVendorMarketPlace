@@ -50,7 +50,7 @@ multi-vendor-marketplace/
 | Layer | Technology | Purpose |
 | :--- | :--- | :--- |
 | **Frontend** | React 18 + Vite | Single Page Application (SPA), lightning-fast HMR |
-| **Styling** | Tailwind CSS | Responsive, modern, clean marketplace UI |
+| **Styling & UI** | Tailwind CSS 3.4 + Monochromatic Design System | Refined Cool Blue-Slate design tokens, Light/Dark themes, WCAG AA/AAA compliant |
 | **Backend** | Node.js + Express | RESTful APIs, modular architecture, business logic |
 | **Primary Database** | MongoDB + Mongoose | Users, stores, products, orders, payments, reviews |
 | **Cache & Cart** | Redis | Persistent cart storage (`cart:user:<userId>`) & transient caching |
@@ -142,3 +142,5 @@ At checkout:
    - Storefront UI: `http://localhost:5173`
    - Production Cloud Deployment Guide: [`docs/deployment-guide.md`](file:///docs/deployment-guide.md)
    - Comprehensive Test Report (103 Tests): [`docs/test-report.md`](file:///docs/test-report.md)
+   - Monochromatic Design System Specification: [`DESIGN_SYSTEM.md`](file:///DESIGN_SYSTEM.md)
+   - Design System Redesign Changelog: [`CHANGELOG_REDESIGN.md`](file:///CHANGELOG_REDESIGN.md)

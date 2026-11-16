@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { orderService, paymentService } from '../../services/api.js';
+import { RAZORPAY_THEME_COLOR } from '../../theme/razorpayTheme.js';
 import {
   Package,
-  Calendar,
   Store,
   ArrowLeft,
   Truck,
   CheckCircle2,
-  Clock,
   ShieldCheck,
   MapPin,
   Check,
   FileText,
   CreditCard,
   AlertTriangle,
+  Loader2,
 } from 'lucide-react';
+import { Button } from '../../components/ui/Button.jsx';
+import { Card } from '../../components/ui/Card.jsx';
+import { StatusBadge } from '../../components/ui/StatusBadge.jsx';
 
 export const OrderDetail = () => {
   const { id } = useParams();
@@ -48,7 +51,7 @@ export const OrderDetail = () => {
   if (loading) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <Loader2 className="w-8 h-8 text-main animate-spin" />
       </div>
     );
   }
@@ -56,11 +59,11 @@ export const OrderDetail = () => {
   if (error || !order) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-4">
-        <h2 className="text-xl font-bold text-slate-900">Order Not Found</h2>
-        <p className="text-sm text-slate-500">{error || 'This order could not be retrieved.'}</p>
+        <h2 className="text-xl font-bold text-main">Order Not Found</h2>
+        <p className="text-xs text-muted">{error || 'This order could not be retrieved.'}</p>
         <Link
           to="/orders"
-          className="inline-block px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-semibold hover:bg-blue-700 transition"
+          className="inline-block px-5 py-2.5 bg-primary text-inverse rounded-control text-xs font-semibold hover:bg-primary-hover transition"
         >
           Back to Orders
         </Link>
@@ -128,7 +131,7 @@ export const OrderDetail = () => {
                 setOrder(updated.data.order);
               }
             },
-            theme: { color: '#2563eb' },
+            theme: { color: RAZORPAY_THEME_COLOR },
           };
           const rzp = new window.Razorpay(rzpOptions);
           rzp.open();
@@ -158,24 +161,18 @@ export const OrderDetail = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <Link
         to="/orders"
-        className="inline-flex items-center text-xs font-semibold text-slate-500 hover:text-slate-900 transition"
+        className="inline-flex items-center text-xs font-semibold text-muted hover:text-main transition"
       >
         <ArrowLeft className="w-4 h-4 mr-1" />
         <span>Back to Order History</span>
       </Link>
 
       {justCreated && (
-        <div
-          className={`p-4 rounded-2xl flex items-center space-x-3 ${
-            paymentSuccess
-              ? 'bg-emerald-50 border border-emerald-200 text-emerald-900'
-              : 'bg-amber-50 border border-amber-200 text-amber-900'
-          }`}
-        >
+        <div className="p-4 rounded-control border border-border-strong bg-surface-2 flex items-center space-x-3 text-main">
           {paymentSuccess ? (
-            <CheckCircle2 className="w-6 h-6 text-emerald-600 flex-shrink-0" />
+            <CheckCircle2 className="w-6 h-6 text-main flex-shrink-0" />
           ) : (
-            <AlertTriangle className="w-6 h-6 text-amber-600 flex-shrink-0" />
+            <AlertTriangle className="w-6 h-6 text-main flex-shrink-0" />
           )}
           <div>
             <h4 className="font-bold text-sm">
@@ -183,7 +180,7 @@ export const OrderDetail = () => {
                 ? 'Thank you! Your order has been placed and payment confirmed.'
                 : 'Order Recorded (Payment Incomplete)'}
             </h4>
-            <p className="text-xs">
+            <p className="text-xs text-muted mt-0.5">
               {paymentSuccess
                 ? `Order #${order.orderNumber} is paid and assigned to the respective vendors for independent fulfillment. Razorpay payment verified with platform commission recorded.`
                 : `Order #${order.orderNumber} has been created and reserved in our system. You can complete payment below at any time.`}
@@ -193,86 +190,85 @@ export const OrderDetail = () => {
       )}
 
       {/* Header Info */}
-      <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <Card className="p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center space-x-3">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-main">
               {order.orderNumber}
             </h1>
-            <span className="text-xs uppercase font-extrabold px-3 py-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
-              {order.overallStatus?.replace('_', ' ')}
-            </span>
+            <StatusBadge status={order.overallStatus} />
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-muted mt-1">
             Placed on {new Date(order.createdAt).toLocaleString()} · Payment Status:{' '}
-            <span className="capitalize font-semibold text-slate-700">{order.paymentStatus}</span>
+            <span className="capitalize font-semibold text-main">{order.paymentStatus}</span>
           </p>
         </div>
 
         <div className="text-left md:text-right flex flex-col md:items-end space-y-2">
           <div>
-            <span className="text-xs text-slate-400 uppercase font-bold tracking-wider block">
+            <span className="text-xs text-muted uppercase font-bold tracking-wider block">
               Grand Total
             </span>
-            <span className="text-3xl font-black text-slate-900">
+            <span className="text-3xl font-black text-main">
               ₹{order.totals?.grandTotal?.toLocaleString('en-IN')}
             </span>
           </div>
 
           <div className="flex items-center space-x-3 flex-wrap gap-2">
             {order.paymentStatus !== 'paid' && (
-              <button
+              <Button
                 onClick={handleRetryPayment}
                 disabled={paying}
-                className="inline-flex items-center space-x-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50"
+                loading={paying}
+                size="sm"
               >
-                <CreditCard className="w-3.5 h-3.5" />
+                <CreditCard className="w-3.5 h-3.5 mr-1.5" />
                 <span>{paying ? 'Opening Gateway...' : 'Pay Now / Retry Payment'}</span>
-              </button>
+              </Button>
             )}
 
             <a
               href={orderService.getInvoiceUrl(order._id || order.orderNumber)}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center space-x-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-sm"
+              className="inline-flex items-center space-x-1.5 px-4 py-2 bg-surface-2 hover:bg-surface-3 text-main border border-border rounded-control text-xs font-bold transition shadow-xs"
             >
               <FileText className="w-3.5 h-3.5" />
               <span>Download Invoice (PDF)</span>
             </a>
           </div>
         </div>
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Multi-Vendor Packages & Fulfillment Trackers */}
         <div className="lg:col-span-2 space-y-6">
-          <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
-            <Truck className="w-5 h-5 text-blue-600" />
+          <h2 className="text-lg font-bold text-main flex items-center space-x-2">
+            <Truck className="w-5 h-5 text-main" />
             <span>Multi-Vendor Fulfillment Packages ({Object.keys(vendorPackages).length})</span>
           </h2>
 
           {Object.entries(vendorPackages).map(([storeName, pkg], idx) => (
-            <div
+            <Card
               key={idx}
-              className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+              className="overflow-hidden"
             >
               {/* Package Header */}
-              <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="bg-surface-2 px-6 py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                  <div className="w-8 h-8 rounded-control bg-surface border border-border text-main flex items-center justify-center font-bold">
                     <Store className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900">Package #{idx + 1} · {storeName}</h3>
-                    <span className="text-[11px] text-slate-500">Fulfilled directly by vendor</span>
+                    <h3 className="text-sm font-bold text-main">Package #{idx + 1} · {storeName}</h3>
+                    <span className="text-[11px] text-muted">Fulfilled directly by vendor</span>
                   </div>
                 </div>
 
                 {pkg.items[0]?.trackingNumber && (
-                  <div className="text-xs bg-white border border-slate-200 px-3 py-1 rounded-lg">
-                    <span className="text-slate-400 font-semibold">Tracking #: </span>
-                    <span className="font-mono font-bold text-blue-600">
+                  <div className="text-xs bg-surface border border-border px-3 py-1 rounded-control">
+                    <span className="text-muted font-semibold">Tracking #: </span>
+                    <span className="font-mono font-bold text-main">
                       {pkg.items[0].trackingNumber}
                     </span>
                   </div>
@@ -280,20 +276,20 @@ export const OrderDetail = () => {
               </div>
 
               {/* Fulfillment Step Progress Timeline */}
-              <div className="p-6 border-b border-slate-100">
+              <div className="p-6 border-b border-border">
                 <div className="flex items-center justify-between relative">
-                  <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-200 -translate-y-1/2 z-0"></div>
+                  <div className="absolute top-1/2 left-0 right-0 h-1 bg-border -translate-y-1/2 z-0"></div>
                   {steps.map((st, stepIdx) => {
                     const status = getStepStatus(pkg.items[0]?.fulfillmentStatus, st);
                     return (
                       <div key={st} className="relative z-10 flex flex-col items-center">
                         <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition ${
+                          className={`w-8 h-8 rounded-pill flex items-center justify-center text-xs font-bold transition ${
                             status === 'completed'
-                              ? 'bg-emerald-600 text-white'
+                              ? 'bg-primary text-inverse border border-primary shadow-xs'
                               : status === 'current'
-                              ? 'bg-blue-600 text-white ring-4 ring-blue-100'
-                              : 'bg-slate-200 text-slate-500'
+                              ? 'bg-surface text-main border-2 border-primary ring-2 ring-primary/20'
+                              : 'bg-surface-2 text-muted border border-border'
                           }`}
                         >
                           {status === 'completed' ? (
@@ -304,11 +300,9 @@ export const OrderDetail = () => {
                         </div>
                         <span
                           className={`text-[11px] font-bold uppercase mt-2 ${
-                            status === 'completed'
-                              ? 'text-emerald-700'
-                              : status === 'current'
-                              ? 'text-blue-600'
-                              : 'text-slate-400'
+                            status === 'completed' || status === 'current'
+                              ? 'text-main'
+                              : 'text-muted'
                           }`}
                         >
                           {st}
@@ -320,59 +314,59 @@ export const OrderDetail = () => {
               </div>
 
               {/* Package Line Items */}
-              <div className="divide-y divide-slate-100 p-6 space-y-4">
+              <div className="divide-y divide-border p-6 space-y-4">
                 {pkg.items.map((item) => (
                   <div key={item._id} className="pt-2 flex items-center justify-between">
                     <div>
-                      <h4 className="text-sm font-bold text-slate-800">{item.title}</h4>
-                      <p className="text-xs text-slate-400">
+                      <h4 className="text-sm font-bold text-main">{item.title}</h4>
+                      <p className="text-xs text-muted">
                         Qty: {item.quantity} × ₹{item.price?.toLocaleString('en-IN')}
                       </p>
                     </div>
-                    <span className="text-sm font-bold text-slate-900">
+                    <span className="text-sm font-bold text-main">
                       ₹{item.itemSubtotal?.toLocaleString('en-IN')}
                     </span>
                   </div>
                 ))}
               </div>
-            </div>
+            </Card>
           ))}
         </div>
 
         {/* Right Column: Shipping Details & Order Totals */}
         <div className="space-y-6">
           {/* Shipping Address */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-3">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center space-x-1.5">
-              <MapPin className="w-4 h-4 text-blue-600" />
+          <Card className="p-6 space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center space-x-1.5">
+              <MapPin className="w-4 h-4 text-main" />
               <span>Delivery Address</span>
             </h3>
 
-            <div className="text-xs text-slate-700 space-y-1">
-              <p className="font-bold text-sm text-slate-900">{order.shippingAddress?.fullName}</p>
-              <p>{order.shippingAddress?.addressLine1}</p>
-              {order.shippingAddress?.addressLine2 && <p>{order.shippingAddress?.addressLine2}</p>}
-              <p>
+            <div className="text-xs text-main space-y-1">
+              <p className="font-bold text-sm">{order.shippingAddress?.fullName}</p>
+              <p className="text-muted">{order.shippingAddress?.addressLine1}</p>
+              {order.shippingAddress?.addressLine2 && <p className="text-muted">{order.shippingAddress?.addressLine2}</p>}
+              <p className="text-muted">
                 {order.shippingAddress?.city}, {order.shippingAddress?.state} -{' '}
                 {order.shippingAddress?.postalCode}
               </p>
-              <p className="text-slate-500 pt-1">Phone: {order.shippingAddress?.phone}</p>
+              <p className="text-muted pt-1">Phone: {order.shippingAddress?.phone}</p>
             </div>
-          </div>
+          </Card>
 
           {/* Totals Breakdown */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
-            <h3 className="text-base font-bold text-slate-900">Payment Breakdown</h3>
+          <Card className="p-6 space-y-4">
+            <h3 className="text-base font-bold text-main">Payment Breakdown</h3>
 
-            <div className="space-y-2 text-xs border-b border-slate-100 pb-3 text-slate-600">
+            <div className="space-y-2 text-xs border-b border-border pb-3 text-muted">
               <div className="flex justify-between">
                 <span>Items Subtotal</span>
-                <span className="font-semibold text-slate-900">
+                <span className="font-semibold text-main">
                   ₹{order.totals?.subtotal?.toLocaleString('en-IN')}
                 </span>
               </div>
               {(order.totals?.discount > 0 || order.appliedCoupon?.discountAmount > 0) && (
-                <div className="flex justify-between text-emerald-600 font-semibold">
+                <div className="flex justify-between text-main font-semibold">
                   <span>Coupon Discount ({order.appliedCoupon?.code || 'PROMO'})</span>
                   <span>
                     - ₹{(order.totals?.discount || order.appliedCoupon?.discountAmount).toLocaleString('en-IN')}
@@ -381,28 +375,30 @@ export const OrderDetail = () => {
               )}
               <div className="flex justify-between">
                 <span>Shipping Fee</span>
-                <span className="font-semibold text-emerald-600">Free</span>
+                <span className="font-semibold text-main">Free</span>
               </div>
               <div className="flex justify-between">
                 <span>Estimated Tax</span>
-                <span className="font-semibold text-slate-900">Included</span>
+                <span className="font-semibold text-main">Included</span>
               </div>
             </div>
 
             <div className="flex justify-between items-baseline pt-1">
-              <span className="text-sm font-bold text-slate-900">Grand Total</span>
-              <span className="text-xl font-black text-slate-900">
+              <span className="text-sm font-bold text-main">Grand Total</span>
+              <span className="text-xl font-black text-main">
                 ₹{order.totals?.grandTotal?.toLocaleString('en-IN')}
               </span>
             </div>
 
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-500 flex items-center space-x-2">
-              <ShieldCheck className="w-4 h-4 text-blue-600 flex-shrink-0" />
+            <div className="p-3 bg-surface-2 rounded-control border border-border text-[11px] text-muted flex items-center space-x-2">
+              <ShieldCheck className="w-4 h-4 text-main flex-shrink-0" />
               <span>Full marketplace buyer protection applied to this purchase.</span>
             </div>
-          </div>
+          </Card>
         </div>
       </div>
     </div>
   );
 };
+
+export default OrderDetail;

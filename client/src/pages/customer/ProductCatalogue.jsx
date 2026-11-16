@@ -3,17 +3,19 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { productService } from '../../services/api.js';
 import {
   Search,
-  Filter,
-  Package,
   Store,
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
   X,
-  SlidersHorizontal,
-  CheckCircle2,
   Sparkles,
+  Package,
+  Loader2,
 } from 'lucide-react';
+import { Button } from '../../components/ui/Button.jsx';
+import { Card } from '../../components/ui/Card.jsx';
+import { StatusBadge } from '../../components/ui/StatusBadge.jsx';
+import { EmptyState } from '../../components/ui/EmptyState.jsx';
 
 const CATEGORIES = [
   'All Categories',
@@ -44,7 +46,6 @@ export const ProductCatalogue = () => {
   const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '');
   const [inStockOnly, setInStockOnly] = useState(searchParams.get('inStockOnly') === 'true');
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page'), 10) || 1);
-  const [showFiltersModal, setShowFiltersModal] = useState(false);
 
   const fetchProducts = async (pageToFetch = currentPage) => {
     setLoading(true);
@@ -132,15 +133,15 @@ export const ProductCatalogue = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-main tracking-tight">
               Marketplace Catalogue
             </h1>
-            <span className="hidden sm:inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <Sparkles className="w-3 h-3 text-emerald-500" />
+            <span className="hidden sm:inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-pill text-[11px] font-semibold bg-surface-2 text-main border border-border">
+              <Sparkles className="w-3 h-3 text-main" />
               <span>Elasticsearch Engine</span>
             </span>
           </div>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-xs sm:text-sm text-muted mt-1">
             Full-text search, multi-faceted category filtering, price ranges, and multi-vendor storefronts.
           </p>
         </div>
@@ -148,13 +149,13 @@ export const ProductCatalogue = () => {
         {/* Search Bar */}
         <form onSubmit={handleSearchSubmit} className="flex items-center space-x-2 max-w-md w-full">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-muted absolute left-3 top-3 pointer-events-none" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search title, description, or seller..."
-              className="w-full pl-9 pr-9 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="w-full pl-9 pr-9 py-2 bg-surface text-main border border-border rounded-control text-sm placeholder:text-muted/60 focus:outline-none focus:border-primary focus:ring-1 focus:ring-ring transition"
             />
             {search && (
               <button
@@ -163,23 +164,20 @@ export const ProductCatalogue = () => {
                   setSearch('');
                   setCurrentPage(1);
                 }}
-                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-2.5 text-muted hover:text-main"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
           </div>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition shadow-sm"
-          >
+          <Button type="submit" size="md">
             Search
-          </button>
+          </Button>
         </form>
       </div>
 
       {/* Main Filter & Sort Controls Card */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <Card className="p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           {/* Category Quick Pills */}
           <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0 max-w-full">
@@ -190,10 +188,10 @@ export const ProductCatalogue = () => {
                   setSelectedCategory(cat);
                   setCurrentPage(1);
                 }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
+                className={`px-3 py-1.5 rounded-pill text-xs font-semibold whitespace-nowrap transition ${
                   selectedCategory === cat
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-primary text-inverse shadow-xs'
+                    : 'bg-surface-2 text-muted hover:text-main hover:bg-surface-3 border border-border'
                 }`}
               >
                 {cat}
@@ -202,16 +200,16 @@ export const ProductCatalogue = () => {
           </div>
 
           {/* Sort Controls */}
-          <div className="flex items-center space-x-2 text-xs text-slate-600 ml-auto">
-            <ArrowUpDown className="w-4 h-4 text-slate-400" />
-            <span className="font-semibold">Sort By:</span>
+          <div className="flex items-center space-x-2 text-xs text-muted ml-auto">
+            <ArrowUpDown className="w-3.5 h-3.5 text-muted" />
+            <span className="font-semibold text-main">Sort By:</span>
             <select
               value={sortBy}
               onChange={(e) => {
                 setSortBy(e.target.value);
                 setCurrentPage(1);
               }}
-              className="border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-border rounded-control px-2.5 py-1.5 text-xs bg-surface text-main focus:outline-none focus:border-primary focus:ring-1 focus:ring-ring"
             >
               <option value="relevance">Relevance</option>
               <option value="newest">Newest Listed</option>
@@ -223,37 +221,34 @@ export const ProductCatalogue = () => {
         </div>
 
         {/* Secondary Filters Bar: Price Range & In-Stock Availability */}
-        <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4 text-xs">
+        <div className="pt-3 border-t border-border flex flex-wrap items-center justify-between gap-4 text-xs">
           <form onSubmit={handlePriceFilterApply} className="flex items-center space-x-2 flex-wrap">
-            <span className="font-semibold text-slate-700">Price (₹):</span>
+            <span className="font-semibold text-main">Price (₹):</span>
             <input
               type="number"
               min="0"
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
               placeholder="Min"
-              className="w-20 px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-20 px-2.5 py-1.5 bg-surface text-main border border-border rounded-control text-xs focus:ring-1 focus:ring-ring focus:border-primary focus:outline-none"
             />
-            <span className="text-slate-400">–</span>
+            <span className="text-muted">–</span>
             <input
               type="number"
               min="0"
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
               placeholder="Max"
-              className="w-20 px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-20 px-2.5 py-1.5 bg-surface text-main border border-border rounded-control text-xs focus:ring-1 focus:ring-ring focus:border-primary focus:outline-none"
             />
-            <button
-              type="submit"
-              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition"
-            >
+            <Button type="submit" variant="secondary" size="sm">
               Apply
-            </button>
+            </Button>
           </form>
 
           {/* Availability Checkbox */}
           <div className="flex items-center space-x-4">
-            <label className="inline-flex items-center space-x-2 text-slate-700 cursor-pointer font-medium">
+            <label className="inline-flex items-center space-x-2 text-main cursor-pointer font-medium">
               <input
                 type="checkbox"
                 checked={inStockOnly}
@@ -261,7 +256,7 @@ export const ProductCatalogue = () => {
                   setInStockOnly(e.target.checked);
                   setCurrentPage(1);
                 }}
-                className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                className="w-4 h-4 rounded-control border-border text-primary focus:ring-ring"
               />
               <span>In Stock Only</span>
             </label>
@@ -270,35 +265,31 @@ export const ProductCatalogue = () => {
               <button
                 type="button"
                 onClick={handleClearAllFilters}
-                className="text-blue-600 hover:text-blue-800 font-semibold underline text-xs"
+                className="text-main hover:text-muted font-semibold underline text-xs transition"
               >
                 Reset All Filters
               </button>
             )}
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Results Header Count & Active Filter Pills */}
-      <div className="flex items-center justify-between text-xs text-slate-500">
+      <div className="flex items-center justify-between text-xs text-muted">
         <div>
-          Showing <strong className="text-slate-800">{products.length}</strong> of{' '}
-          <strong className="text-slate-800">{pagination.total}</strong> products
+          Showing <strong className="text-main">{products.length}</strong> of{' '}
+          <strong className="text-main">{pagination.total}</strong> products
           {search && (
             <span>
               {' '}
-              matching "<strong className="text-slate-700">{search}</strong>"
+              matching "<strong className="text-main">{search}</strong>"
             </span>
           )}
         </div>
 
         <div className="flex items-center space-x-2">
           <span>Source:</span>
-          <span
-            className={`font-mono text-[10px] uppercase px-2 py-0.5 rounded font-bold ${
-              searchSource === 'elasticsearch' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
-            }`}
-          >
+          <span className="font-mono text-[10px] uppercase px-2 py-0.5 rounded-control font-bold bg-surface-2 text-main border border-border">
             {searchSource}
           </span>
         </div>
@@ -307,32 +298,29 @@ export const ProductCatalogue = () => {
       {/* Products Grid */}
       {loading ? (
         <div className="min-h-[40vh] flex items-center justify-center">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <Loader2 className="w-8 h-8 text-main animate-spin" />
         </div>
       ) : products.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center space-y-4 shadow-sm">
-          <Package className="w-12 h-12 text-slate-300 mx-auto" />
-          <h3 className="text-lg font-bold text-slate-800">No products match your criteria</h3>
-          <p className="text-sm text-slate-500 max-w-sm mx-auto">
-            Try adjusting your search keywords, broadening category selections, or clearing price limits.
-          </p>
-          <button
-            onClick={handleClearAllFilters}
-            className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-semibold hover:bg-blue-700 transition"
-          >
-            Clear Filters
-          </button>
-        </div>
+        <EmptyState
+          icon={Package}
+          title="No products match your criteria"
+          description="Try adjusting your search keywords, broadening category selections, or clearing price limits."
+          action={
+            <Button onClick={handleClearAllFilters} size="sm">
+              Clear Filters
+            </Button>
+          }
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((product) => (
             <Link
               key={product._id || product.id}
               to={`/product/${product._id || product.id}`}
-              className="group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md hover:border-blue-300 transition flex flex-col"
+              className="group bg-surface rounded-card border border-border overflow-hidden shadow-xs hover:shadow-md hover:border-border-strong transition flex flex-col"
             >
               {/* Product Thumbnail */}
-              <div className="aspect-square bg-slate-100 overflow-hidden relative">
+              <div className="aspect-square bg-surface-2 overflow-hidden relative border-b border-border">
                 {product.images && product.images[0] ? (
                   <img
                     src={product.images[0]}
@@ -340,45 +328,45 @@ export const ProductCatalogue = () => {
                     className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-slate-300">
+                  <div className="w-full h-full flex items-center justify-center text-muted">
                     <Package className="w-12 h-12" />
                   </div>
                 )}
                 {product.stock <= 5 && product.stock > 0 && (
-                  <span className="absolute top-2 right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
-                    Only {product.stock} left
-                  </span>
+                  <div className="absolute top-2 right-2">
+                    <StatusBadge status="low_stock" label={`Only ${product.stock} left`} />
+                  </div>
                 )}
                 {product.stock === 0 && (
-                  <span className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
-                    Out of Stock
-                  </span>
+                  <div className="absolute top-2 right-2">
+                    <StatusBadge status="out_of_stock" label="Out of Stock" />
+                  </div>
                 )}
               </div>
 
               {/* Product Info */}
               <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                 <div>
-                  <div className="flex items-center space-x-1.5 text-xs text-slate-400 mb-1">
-                    <Store className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="font-medium text-slate-600">
+                  <div className="flex items-center space-x-1.5 text-xs text-muted mb-1">
+                    <Store className="w-3.5 h-3.5 text-muted" />
+                    <span className="font-medium text-main truncate">
                       {product.storeId?.name || product.storeName || 'Seller'}
                     </span>
                   </div>
-                  <h3 className="font-bold text-slate-900 text-sm line-clamp-2 group-hover:text-blue-600 transition">
+                  <h3 className="font-bold text-main text-sm line-clamp-2 group-hover:text-muted transition">
                     {product.title}
                   </h3>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                <div className="pt-2 border-t border-border flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Price</span>
-                    <span className="text-lg font-extrabold text-slate-900">
+                    <span className="text-[10px] text-muted uppercase tracking-wider block">Price</span>
+                    <span className="text-lg font-extrabold text-main">
                       ₹{Number(product.price).toLocaleString('en-IN')}
                     </span>
                   </div>
 
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700">
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-control bg-surface-2 text-main border border-border group-hover:bg-primary group-hover:text-inverse transition">
                     View
                   </span>
                 </div>
@@ -394,19 +382,19 @@ export const ProductCatalogue = () => {
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={pagination.page <= 1}
-            className="p-2 border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-40 transition"
+            className="p-2 border border-border rounded-control bg-surface text-main hover:bg-surface-2 disabled:opacity-40 transition"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
 
-          <span className="text-xs text-slate-600 px-3 py-1 font-semibold">
+          <span className="text-xs text-main px-3 py-1 font-semibold">
             Page {pagination.page} of {pagination.pages}
           </span>
 
           <button
             onClick={() => setCurrentPage((p) => Math.min(pagination.pages, p + 1))}
             disabled={pagination.page >= pagination.pages}
-            className="p-2 border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-40 transition"
+            className="p-2 border border-border rounded-control bg-surface text-main hover:bg-surface-2 disabled:opacity-40 transition"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -415,3 +403,5 @@ export const ProductCatalogue = () => {
     </div>
   );
 };
+
+export default ProductCatalogue;

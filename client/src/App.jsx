@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext.jsx';
 import { CartProvider } from './context/CartContext.jsx';
 import { ProtectedRoute } from './routes/ProtectedRoute.jsx';
 import { Navbar } from './components/Navbar.jsx';
+import { Footer } from './components/Footer.jsx';
 import { Home } from './pages/Home.jsx';
 import { Login } from './pages/Login.jsx';
 import { Register } from './pages/Register.jsx';
@@ -27,7 +28,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
-          <div className="min-h-screen bg-slate-50 flex flex-col text-slate-800">
+          <div className="min-h-screen bg-bg flex flex-col text-main transition-colors">
             <Navbar />
             <main className="flex-1">
               <Routes>
@@ -145,9 +146,7 @@ export default function App() {
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
-            <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
-              TechMart Multi-Vendor Marketplace · Step 5: Redis Cart, Atomic Checkout & Order Fulfillment Active
-            </footer>
+            <Footer />
           </div>
         </CartProvider>
       </AuthProvider>

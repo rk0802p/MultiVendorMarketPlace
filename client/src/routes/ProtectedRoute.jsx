@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import { ShieldAlert, Loader2 } from 'lucide-react';
 
 export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -8,10 +9,10 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="flex flex-col items-center space-y-3">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm font-medium text-slate-500">Authenticating session...</span>
+          <Loader2 className="w-8 h-8 text-main animate-spin" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted">Authenticating session...</span>
         </div>
       </div>
     );
@@ -24,20 +25,18 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-md border border-slate-200 text-center space-y-4">
-          <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+        <div className="max-w-md w-full bg-surface p-8 rounded-card shadow-md border border-border text-center space-y-4">
+          <div className="w-12 h-12 rounded-control bg-surface-2 text-main border border-border-strong flex items-center justify-center mx-auto">
+            <ShieldAlert className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900">Access Restricted</h2>
-          <p className="text-sm text-slate-600">
-            Your current role (<strong className="capitalize text-slate-800">{user.role}</strong>) does not have authorization to view this resource.
+          <h2 className="text-xl font-bold text-main">Access Restricted</h2>
+          <p className="text-xs text-muted leading-relaxed">
+            Your current role (<strong className="capitalize text-main font-semibold">{user.role}</strong>) does not have authorization to view this resource.
           </p>
           <div className="pt-2">
             <Link
               to="/"
-              className="inline-block px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition"
+              className="inline-block px-5 py-2.5 bg-primary text-inverse rounded-control text-xs font-semibold hover:bg-primary-hover transition shadow-xs"
             >
               Return to Marketplace
             </Link>

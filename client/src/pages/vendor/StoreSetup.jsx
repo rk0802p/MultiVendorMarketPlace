@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { vendorService, uploadService } from '../../services/api.js';
-import { Store, Image, UploadCloud, CheckCircle, AlertCircle, Save } from 'lucide-react';
+import { Store, Image, UploadCloud, CheckCircle, AlertCircle, Save, Loader2 } from 'lucide-react';
+import { Button } from '../../components/ui/Button.jsx';
+import { Card } from '../../components/ui/Card.jsx';
 
 export const StoreSetup = () => {
   const [store, setStore] = useState(null);
@@ -100,34 +102,34 @@ export const StoreSetup = () => {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+        <Loader2 className="w-8 h-8 text-main animate-spin" />
       </div>
     );
   }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
+      <Card className="p-6 sm:p-8 space-y-6">
         <div>
-          <span className="text-xs uppercase font-bold tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+          <span className="text-xs uppercase font-bold tracking-wider text-main bg-surface-2 px-2.5 py-1 rounded-pill border border-border">
             Store Profile Customization
           </span>
-          <h1 className="text-2xl font-bold text-slate-900 mt-2">Store Branding & Details</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-main mt-2">Store Branding & Details</h1>
+          <p className="text-xs sm:text-sm text-muted">
             Customize your storefront appearance, logo, banner, and customer contact information.
           </p>
         </div>
 
         {message && (
-          <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center space-x-2 text-sm text-emerald-700">
-            <CheckCircle className="w-5 h-5 flex-shrink-0" />
+          <div className="p-3.5 bg-surface-2 border border-border-strong rounded-control flex items-center space-x-2 text-xs text-main">
+            <CheckCircle className="w-4 h-4 flex-shrink-0" />
             <span>{message}</span>
           </div>
         )}
 
         {error && (
-          <div className="p-3.5 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2 text-sm text-red-700">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <div className="p-3.5 bg-surface-2 border border-border-strong rounded-control flex items-center space-x-2 text-xs text-main">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
@@ -135,19 +137,19 @@ export const StoreSetup = () => {
         <form onSubmit={handleSave} className="space-y-6">
           {/* Banner Upload / Preview */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
               Store Banner Image
             </label>
-            <div className="relative w-full h-36 bg-slate-100 rounded-xl overflow-hidden border-2 border-dashed border-slate-200 flex items-center justify-center group">
+            <div className="relative w-full h-36 bg-surface-2 rounded-control overflow-hidden border-2 border-dashed border-border-strong flex items-center justify-center group">
               {banner ? (
                 <img src={banner} alt="Banner Preview" className="w-full h-full object-cover" />
               ) : (
-                <div className="text-center text-slate-400">
+                <div className="text-center text-muted">
                   <Image className="w-8 h-8 mx-auto mb-1" />
                   <span className="text-xs">No banner uploaded</span>
                 </div>
               )}
-              <label className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-medium cursor-pointer transition">
+              <label className="absolute inset-0 bg-overlay/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-inverse text-xs font-medium cursor-pointer transition">
                 <UploadCloud className="w-5 h-5 mr-1.5" />
                 <span>{uploadingBanner ? 'Uploading...' : 'Upload S3 Banner'}</span>
                 <input
@@ -163,13 +165,13 @@ export const StoreSetup = () => {
 
           {/* Logo Upload / Preview */}
           <div className="flex items-center space-x-4">
-            <div className="relative w-20 h-20 rounded-xl bg-slate-100 overflow-hidden border border-slate-200 flex items-center justify-center group flex-shrink-0">
+            <div className="relative w-20 h-20 rounded-control bg-surface-2 overflow-hidden border border-border flex items-center justify-center group flex-shrink-0">
               {logo ? (
                 <img src={logo} alt="Logo Preview" className="w-full h-full object-cover" />
               ) : (
-                <Store className="w-8 h-8 text-slate-400" />
+                <Store className="w-8 h-8 text-muted" />
               )}
-              <label className="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] cursor-pointer transition text-center p-1">
+              <label className="absolute inset-0 bg-overlay/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-inverse text-[10px] cursor-pointer transition text-center p-1">
                 <span>{uploadingLogo ? '...' : 'Change'}</span>
                 <input
                   type="file"
@@ -181,15 +183,15 @@ export const StoreSetup = () => {
               </label>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-slate-800">Store Logo</h4>
-              <p className="text-xs text-slate-500">Square JPEG/PNG/WEBP recommended. Direct upload to AWS S3.</p>
+              <h4 className="text-sm font-semibold text-main">Store Logo</h4>
+              <p className="text-xs text-muted">Square JPEG/PNG/WEBP recommended. Direct upload to AWS S3.</p>
             </div>
           </div>
 
           {/* Name & Slug */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
                 Store Name
               </label>
               <input
@@ -197,73 +199,75 @@ export const StoreSetup = () => {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-surface border border-border rounded-control text-sm text-main focus:outline-none focus:border-primary focus:ring-1 focus:ring-ring transition"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
                 Store Slug
               </label>
               <input
                 type="text"
                 disabled
                 value={store?.slug || ''}
-                className="w-full px-3.5 py-2.5 border border-slate-200 bg-slate-50 rounded-lg text-sm text-slate-500 cursor-not-allowed"
+                className="w-full px-3.5 py-2.5 border border-border bg-surface-2 rounded-control text-sm text-muted font-mono cursor-not-allowed"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
               Description
             </label>
             <textarea
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-3 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full p-3 bg-surface border border-border rounded-control text-sm text-main focus:outline-none focus:border-primary focus:ring-1 focus:ring-ring transition"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
                 Contact Email
               </label>
               <input
                 type="email"
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
-                className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-surface border border-border rounded-control text-sm text-main focus:outline-none focus:border-primary focus:ring-1 focus:ring-ring transition"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
                 Contact Phone
               </label>
               <input
                 type="tel"
                 value={contactPhone}
                 onChange={(e) => setContactPhone(e.target.value)}
-                className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-surface border border-border rounded-control text-sm text-main focus:outline-none focus:border-primary focus:ring-1 focus:ring-ring transition"
               />
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-100 flex justify-end">
-            <button
+          <div className="pt-4 border-t border-border flex justify-end">
+            <Button
               type="submit"
               disabled={saving}
-              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium text-sm transition shadow-sm flex items-center space-x-2 disabled:opacity-50"
+              loading={saving}
             >
-              <Save className="w-4 h-4" />
+              <Save className="w-4 h-4 mr-1.5" />
               <span>{saving ? 'Saving...' : 'Save Changes'}</span>
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
+      </Card>
     </div>
   );
 };
+
+export default StoreSetup;

@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { orderService, paymentService, couponService } from '../../services/api.js';
+import { RAZORPAY_THEME_COLOR } from '../../theme/razorpayTheme.js';
 import {
   ShieldCheck,
   Truck,
@@ -10,11 +11,12 @@ import {
   Lock,
   ArrowLeft,
   AlertCircle,
-  CheckCircle2,
   Package,
   Tag,
   X,
 } from 'lucide-react';
+import { Button } from '../../components/ui/Button.jsx';
+import { Card } from '../../components/ui/Card.jsx';
 
 export const Checkout = () => {
   const { cart, fetchCart } = useCart();
@@ -132,7 +134,7 @@ export const Checkout = () => {
                   state: { orderCreated: true, paymentSuccess: true, orderNumber: res.data.orderNumber },
                 });
               },
-              theme: { color: '#2563eb' },
+              theme: { color: RAZORPAY_THEME_COLOR },
               modal: {
                 ondismiss: () => {
                   fetchCart();
@@ -176,10 +178,10 @@ export const Checkout = () => {
   if (items.length === 0) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <h2 className="text-xl font-bold text-slate-800 mb-4">Your cart is empty</h2>
+        <h2 className="text-xl font-bold text-main mb-4">Your cart is empty</h2>
         <Link
           to="/products"
-          className="inline-block px-6 py-2.5 bg-blue-600 text-white rounded-xl font-semibold text-sm hover:bg-blue-700 transition"
+          className="inline-block px-6 py-2.5 bg-primary text-inverse rounded-control font-semibold text-xs hover:bg-primary-hover transition"
         >
           Return to Catalogue
         </Link>
@@ -191,27 +193,27 @@ export const Checkout = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <Link
         to="/cart"
-        className="inline-flex items-center text-xs font-semibold text-slate-500 hover:text-slate-900 transition"
+        className="inline-flex items-center text-xs font-semibold text-muted hover:text-main transition"
       >
         <ArrowLeft className="w-4 h-4 mr-1" />
         <span>Back to Shopping Cart</span>
       </Link>
 
-      <div className="border-b border-slate-200 pb-4">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+      <div className="border-b border-border pb-4">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-main tracking-tight">
           Secure Checkout
         </h1>
-        <p className="text-sm text-slate-500">
+        <p className="text-xs sm:text-sm text-muted">
           Review your delivery details and place your order with verified marketplace sellers.
         </p>
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start space-x-3 text-red-900 text-sm">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+        <div className="p-4 bg-surface-2 border border-border-strong rounded-control flex items-start space-x-3 text-main text-sm">
+          <AlertCircle className="w-5 h-5 text-main flex-shrink-0 mt-0.5" />
           <div>
             <h4 className="font-bold">Checkout Notice</h4>
-            <p className="text-xs text-red-700 mt-0.5">{error}</p>
+            <p className="text-xs text-muted mt-0.5">{error}</p>
           </div>
         </div>
       )}
@@ -220,15 +222,15 @@ export const Checkout = () => {
         {/* Left Column: Shipping & Payment Method */}
         <div className="lg:col-span-2 space-y-6">
           {/* Shipping Address Card */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
-            <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
-              <Truck className="w-5 h-5 text-blue-600" />
-              <h2 className="text-base font-bold text-slate-900">1. Shipping Address</h2>
+          <Card className="p-6 space-y-4">
+            <div className="flex items-center space-x-2 border-b border-border pb-3">
+              <Truck className="w-5 h-5 text-main" />
+              <h2 className="text-base font-bold text-main">1. Shipping Address</h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1">
                   Full Name *
                 </label>
                 <input
@@ -238,12 +240,12 @@ export const Checkout = () => {
                   value={formData.fullName}
                   onChange={handleChange}
                   placeholder="e.g. Rajiv Sharma"
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition"
+                  className="w-full px-4 py-2.5 bg-surface-2 border border-border rounded-control text-sm text-main placeholder:text-muted/60 focus:outline-none focus:ring-1 focus:ring-ring focus:border-primary transition"
                 />
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1">
                   Street Address *
                 </label>
                 <input
@@ -253,12 +255,12 @@ export const Checkout = () => {
                   value={formData.addressLine1}
                   onChange={handleChange}
                   placeholder="House/Flat number, Street, Landmark"
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition"
+                  className="w-full px-4 py-2.5 bg-surface-2 border border-border rounded-control text-sm text-main placeholder:text-muted/60 focus:outline-none focus:ring-1 focus:ring-ring focus:border-primary transition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1">
                   City *
                 </label>
                 <input
@@ -267,12 +269,12 @@ export const Checkout = () => {
                   required
                   value={formData.city}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition"
+                  className="w-full px-4 py-2.5 bg-surface-2 border border-border rounded-control text-sm text-main focus:outline-none focus:ring-1 focus:ring-ring focus:border-primary transition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1">
                   State *
                 </label>
                 <input
@@ -281,12 +283,12 @@ export const Checkout = () => {
                   required
                   value={formData.state}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition"
+                  className="w-full px-4 py-2.5 bg-surface-2 border border-border rounded-control text-sm text-main focus:outline-none focus:ring-1 focus:ring-ring focus:border-primary transition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1">
                   Postal Code *
                 </label>
                 <input
@@ -296,12 +298,12 @@ export const Checkout = () => {
                   value={formData.postalCode}
                   onChange={handleChange}
                   placeholder="e.g. 560001"
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition"
+                  className="w-full px-4 py-2.5 bg-surface-2 border border-border rounded-control text-sm text-main focus:outline-none focus:ring-1 focus:ring-ring focus:border-primary transition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1">
                   Phone Number *
                 </label>
                 <input
@@ -311,52 +313,52 @@ export const Checkout = () => {
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="10-digit mobile number"
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition"
+                  className="w-full px-4 py-2.5 bg-surface-2 border border-border rounded-control text-sm text-main focus:outline-none focus:ring-1 focus:ring-ring focus:border-primary transition"
                 />
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Payment Method Card */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
-            <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
-              <CreditCard className="w-5 h-5 text-blue-600" />
-              <h2 className="text-base font-bold text-slate-900">2. Payment Method</h2>
+          <Card className="p-6 space-y-4">
+            <div className="flex items-center space-x-2 border-b border-border pb-3">
+              <CreditCard className="w-5 h-5 text-main" />
+              <h2 className="text-base font-bold text-main">2. Payment Method</h2>
             </div>
 
-            <div className="p-4 rounded-xl border-2 border-blue-600 bg-blue-50/30 flex items-center justify-between">
+            <div className="p-4 rounded-control border-2 border-border-strong bg-surface-2 flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-5 h-5 rounded-full border-4 border-blue-600 bg-white"></div>
+                <div className="w-5 h-5 rounded-pill border-4 border-primary bg-surface"></div>
                 <div>
-                  <span className="text-sm font-bold text-slate-900">
+                  <span className="text-sm font-bold text-main">
                     Razorpay Gateway (Marketplace Test Mode)
                   </span>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted">
                     Cards, UPI, NetBanking, and Wallets simulated in test mode.
                   </p>
                 </div>
               </div>
-              <span className="text-xs font-bold uppercase px-2.5 py-0.5 bg-blue-100 text-blue-700 rounded-full">
+              <span className="text-xs font-bold uppercase px-2.5 py-0.5 bg-surface text-main border border-border rounded-pill">
                 Test Mode
               </span>
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* Right Column: Order Items Summary & Place Order Action */}
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
-            <h3 className="text-lg font-bold text-slate-900">Order Summary</h3>
+          <Card className="p-6 space-y-5">
+            <h3 className="text-lg font-bold text-main">Order Summary</h3>
 
             {/* Line items preview */}
-            <div className="divide-y divide-slate-100 max-h-60 overflow-y-auto pr-1">
+            <div className="divide-y divide-border max-h-60 overflow-y-auto pr-1">
               {items.map((item) => (
                 <div key={item.productId} className="py-2.5 flex items-center justify-between text-xs">
                   <div className="min-w-0 pr-2">
-                    <p className="font-semibold text-slate-800 truncate">{item.title}</p>
-                    <p className="text-slate-400">Qty: {item.quantity} · {item.storeName}</p>
+                    <p className="font-semibold text-main truncate">{item.title}</p>
+                    <p className="text-muted">Qty: {item.quantity} · {item.storeName}</p>
                   </div>
-                  <span className="font-bold text-slate-900 flex-shrink-0">
+                  <span className="font-bold text-main flex-shrink-0">
                     ₹{item.itemSubtotal?.toLocaleString('en-IN')}
                   </span>
                 </div>
@@ -364,21 +366,21 @@ export const Checkout = () => {
             </div>
 
             {/* Promo Coupon Section */}
-            <div className="border-t border-slate-200 pt-3 space-y-2">
-              <label className="block text-xs font-bold text-slate-700">Promo Code / Coupon</label>
+            <div className="border-t border-border pt-3 space-y-2">
+              <label className="block text-xs font-bold text-muted">Promo Code / Coupon</label>
               {appliedCoupon ? (
-                <div className="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs">
-                  <div className="flex items-center space-x-2 text-emerald-800 font-bold">
-                    <Tag className="w-3.5 h-3.5 text-emerald-600" />
+                <div className="flex items-center justify-between p-2.5 bg-surface-2 border border-border-strong rounded-control text-xs">
+                  <div className="flex items-center space-x-2 text-main font-bold">
+                    <Tag className="w-3.5 h-3.5 text-main" />
                     <span>{appliedCoupon.code}</span>
-                    <span className="text-[10px] font-normal text-emerald-700">
+                    <span className="text-[10px] font-normal text-muted">
                       (-₹{discountAmount.toLocaleString('en-IN')})
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={handleRemoveCoupon}
-                    className="text-slate-400 hover:text-red-500 transition"
+                    className="text-muted hover:text-main transition p-1"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -391,64 +393,69 @@ export const Checkout = () => {
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                       placeholder="e.g. SAVE10"
-                      className="flex-1 px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs uppercase font-semibold focus:outline-none focus:border-blue-600"
+                      className="flex-1 px-3 py-1.5 bg-surface border border-border rounded-control text-xs uppercase font-semibold text-main focus:outline-none focus:border-primary focus:ring-1 focus:ring-ring"
                     />
-                    <button
+                    <Button
                       type="button"
+                      variant="secondary"
+                      size="sm"
                       onClick={handleApplyCoupon}
                       disabled={couponLoading || !couponCode.trim()}
-                      className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition disabled:opacity-50"
+                      loading={couponLoading}
                     >
-                      {couponLoading ? '...' : 'Apply'}
-                    </button>
+                      Apply
+                    </Button>
                   </div>
                   {couponError && (
-                    <p className="text-[11px] text-red-600 mt-1">{couponError}</p>
+                    <p className="text-[11px] text-muted font-medium mt-1">{couponError}</p>
                   )}
                 </div>
               )}
             </div>
 
-            <div className="space-y-2 text-sm border-t border-slate-200 pt-3">
-              <div className="flex justify-between text-slate-600 text-xs">
+            <div className="space-y-2 text-sm border-t border-border pt-3">
+              <div className="flex justify-between text-muted text-xs">
                 <span>Subtotal</span>
-                <span className="font-semibold text-slate-900">₹{subtotal.toLocaleString('en-IN')}</span>
+                <span className="font-semibold text-main">₹{subtotal.toLocaleString('en-IN')}</span>
               </div>
               {discountAmount > 0 && (
-                <div className="flex justify-between text-emerald-600 text-xs font-semibold">
+                <div className="flex justify-between text-main text-xs font-semibold">
                   <span>Coupon Discount ({appliedCoupon?.code})</span>
                   <span>- ₹{discountAmount.toLocaleString('en-IN')}</span>
                 </div>
               )}
-              <div className="flex justify-between text-slate-600 text-xs">
+              <div className="flex justify-between text-muted text-xs">
                 <span>Shipping</span>
-                <span className="font-semibold text-emerald-600">Free</span>
+                <span className="font-semibold text-main">Free</span>
               </div>
             </div>
 
-            <div className="flex justify-between items-baseline border-t border-slate-200 pt-3">
-              <span className="text-base font-bold text-slate-900">Total</span>
-              <span className="text-2xl font-black text-slate-900">
+            <div className="flex justify-between items-baseline border-t border-border pt-3">
+              <span className="text-base font-bold text-main">Total</span>
+              <span className="text-2xl font-black text-main">
                 ₹{grandTotal.toLocaleString('en-IN')}
               </span>
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm transition shadow-sm flex items-center justify-center space-x-2 disabled:opacity-50"
+              loading={loading}
+              className="w-full py-3.5 font-bold text-sm"
             >
-              <Lock className="w-4 h-4" />
+              <Lock className="w-4 h-4 mr-2" />
               <span>{loading ? 'Processing Checkout...' : 'Confirm & Place Order'}</span>
-            </button>
+            </Button>
 
-            <div className="flex items-center justify-center space-x-1.5 text-xs text-slate-400">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <div className="flex items-center justify-center space-x-1.5 text-xs text-muted">
+              <ShieldCheck className="w-4 h-4 text-main" />
               <span>Concurrency-Safe Atomic Checkout Protected</span>
             </div>
-          </div>
+          </Card>
         </div>
       </form>
     </div>
   );
 };
+
+export default Checkout;
