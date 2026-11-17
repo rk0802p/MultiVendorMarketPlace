@@ -33,11 +33,14 @@ multi-vendor-marketplace/
 │       ├── utils/              # Response helpers, commission calculator, pdf generator
 │       ├── app.js              # Express app definition & route mounting
 │       └── server.js           # Server bootstrap and graceful shutdown
-├── docs/                       # Architectural & technical documentation
+├── docs/                       # Architectural, technical & design documentation
 │   ├── architecture.md         # Detailed architectural diagrams & patterns
 │   ├── database-schema.md      # MongoDB & Redis schemas and ER diagrams
 │   ├── api-documentation.md    # API endpoints inventory and RBAC matrix
-│   └── test-report.md          # Test scenarios, test runner logs & benchmarks
+│   ├── deployment-guide.md     # Production cloud deployment guide
+│   ├── test-report.md          # Test scenarios, test runner logs & benchmarks
+│   ├── design-system.md        # Monochromatic design system tokens & WCAG AA contrast
+│   └── changelog-redesign.md   # Design system migration audit & changelog
 ├── .env.example                # Root environment variables template
 ├── .gitignore                  # Git ignore rules for node_modules, build & secrets
 └── README.md                   # Project documentation
@@ -142,5 +145,5 @@ At checkout:
    - Storefront UI: `http://localhost:5173`
    - Production Cloud Deployment Guide: [`docs/deployment-guide.md`](file:///docs/deployment-guide.md)
    - Comprehensive Test Report (103 Tests): [`docs/test-report.md`](file:///docs/test-report.md)
-   - Monochromatic Design System Specification: [`DESIGN_SYSTEM.md`](file:///DESIGN_SYSTEM.md)
-   - Design System Redesign Changelog: [`CHANGELOG_REDESIGN.md`](file:///CHANGELOG_REDESIGN.md)
+   - Monochromatic Design System Specification: [`docs/design-system.md`](file:///docs/design-system.md)
+   - Design System Redesign Changelog: [`docs/changelog-redesign.md`](file:///docs/changelog-redesign.md)
