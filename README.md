@@ -109,7 +109,7 @@ At checkout:
 ### Setup Steps
 1. **Clone the repository:**
    ```bash
-   git clone [<repo-url>](https://github.com/rk0802p/MultiVendorMarketPlace.git)
+   git clone https://github.com/rk0802p/MultiVendorMarketPlace.git
    cd "Multi-Vender Ecom MarketPlace"
    ```
 
