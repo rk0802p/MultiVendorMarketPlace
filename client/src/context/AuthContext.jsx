@@ -3,22 +3,52 @@ import { authService } from '../services/api.js';
 
 const AuthContext = createContext(null);
 
+const getInitialUser = () => {
+  try {
+    const token = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+    if (token && savedUser) {
+      return JSON.parse(savedUser);
+    }
+  } catch (err) {
+    console.warn('Failed to parse cached user:', err);
+  }
+  return null;
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(getInitialUser);
+  const [loading, setLoading] = useState(() => !!localStorage.getItem('token') && !localStorage.getItem('user'));
   const [error, setError] = useState(null);
 
-  // Initialize and check authenticated session on mount
+  // Initialize and validate session in background on mount
   useEffect(() => {
     const initAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setUser(null);
+        localStorage.removeItem('user');
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await authService.getMe();
         if (response.success && response.data?.user) {
           setUser(response.data.user);
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+        } else {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setUser(null);
         }
       } catch (err) {
-        // Unauthenticated session - clean state
-        setUser(null);
+        // Only clear credentials if server explicitly rejects with 401 Unauthorized
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setUser(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -35,6 +65,9 @@ export const AuthProvider = ({ children }) => {
         setUser(response.data.user);
         if (response.data.token) {
           localStorage.setItem('token', response.data.token);
+        }
+        if (response.data.user) {
+          localStorage.setItem('user', JSON.stringify(response.data.user));
         }
         return { success: true, user: response.data.user };
       }
@@ -55,6 +88,9 @@ export const AuthProvider = ({ children }) => {
         if (response.data.token) {
           localStorage.setItem('token', response.data.token);
         }
+        if (response.data.user) {
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+        }
         return { success: true, user: response.data.user };
       }
       return { success: false, message: response.message };
@@ -72,6 +108,7 @@ export const AuthProvider = ({ children }) => {
       console.warn('Logout request error:', err);
     } finally {
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       setUser(null);
     }
   };

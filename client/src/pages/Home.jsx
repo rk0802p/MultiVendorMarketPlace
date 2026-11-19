@@ -6,7 +6,7 @@ import { Card } from '../components/ui/Card.jsx';
 import { Button } from '../components/ui/Button.jsx';
 
 export const Home = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
@@ -32,7 +32,9 @@ export const Home = () => {
           </p>
 
           <div className="flex flex-wrap gap-4 pt-2">
-            {!isAuthenticated ? (
+            {loading && !user ? (
+              <div className="w-48 h-12 bg-white/10 animate-pulse rounded-control" />
+            ) : !isAuthenticated ? (
               <>
                 <Link
                   to="/register"

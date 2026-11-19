@@ -40,7 +40,8 @@ multi-vendor-marketplace/
 │   ├── deployment-guide.md     # Production cloud deployment guide
 │   ├── test-report.md          # Test scenarios, test runner logs & benchmarks
 │   ├── design-system.md        # Monochromatic design system tokens & WCAG AA contrast
-│   └── changelog-redesign.md   # Design system migration audit & changelog
+│   ├── changelog-redesign.md   # Design system migration audit & changelog
+│   └── screenshots/            # Application & verification screenshots
 ├── .env.example                # Root environment variables template
 ├── .gitignore                  # Git ignore rules for node_modules, build & secrets
 └── README.md                   # Project documentation
@@ -84,7 +85,38 @@ At checkout:
 
 ---
 
-## 4. Execution Roadmap
+## 4. Comprehensive Feature Breakdown
+
+### A. Customer Storefront & Unified Experience
+- **Search & Multi-Facet Filtering**: Full-text keyword search, price range filtering, category aggregation, and instant stock filters with dual-engine execution (Elasticsearch + resilient MongoDB fallback).
+- **Unified Multi-Vendor Cart**: Persistent Redis shopping cart allowing products from multiple different merchants in one cart.
+- **Concurrency-Safe Atomic Checkout**: Optimistic concurrency controls decrement stock atomically to eliminate overselling and race conditions.
+- **Payment Gateway with Idempotent Webhooks**: Seamless Razorpay integration supporting UPI, NetBanking, and domestic cards, backed by background webhook signature verification (`order.paid`, `payment.failed`).
+- **Self-Service Order Tracking & PDF Invoices**: Line-item package tracking per vendor and instant downloadable tax invoice generation using PDFKit.
+- **Verified Buyer Reviews**: Rating and review submissions strictly verified against customer purchase history.
+
+### B. Vendor Portal & Fulfillment Operations
+- **Store Onboarding & Approval**: Seamless application process with automated slug generation and administrative approval checks.
+- **Product Catalog & AWS S3 Uploads**: Complete CRUD for listings, variant pricing, specifications, and direct browser-to-S3 media uploads via presigned URLs.
+- **Tenant Isolation**: Multi-tenant architectural barriers prevent vendors from viewing or editing competitor products or orders.
+- **Independent Order Fulfillment**: Vendors view only their slice of an order and independently advance packages (`placed` → `packed` → `shipped` → `delivered`) with distinct carrier tracking numbers.
+
+### C. Admin Control Center & Platform Intelligence
+- **Store Review & Moderation**: Approve or reject vendor applications with automated notification triggers.
+- **Automated Commission Accounting**: Real-time ledger tracking the 10% platform commission and calculating net payouts for every transaction.
+- **Marketplace Analytics Dashboard**: Interactive executive dashboards visualizing Gross Merchandise Value (GMV), net platform earnings, vendor growth, and fulfillment ratios.
+
+### D. Verification Screenshots
+| View | Description | File Path |
+| :--- | :--- | :--- |
+| **Marketplace Catalogue** | Multi-faceted category filtering & search engine | [`docs/screenshots/01_marketplace_catalogue.jpg`](docs/screenshots/01_marketplace_catalogue.jpg) |
+| **Atomic Checkout** | Multi-vendor order summary & payment method | [`docs/screenshots/02_atomic_checkout.png`](docs/screenshots/02_atomic_checkout.png) |
+| **Order Tracking** | Independent vendor fulfillment packages & timeline | [`docs/screenshots/03_order_tracking_fulfillment.png`](docs/screenshots/03_order_tracking_fulfillment.png) |
+| **Razorpay Webhooks** | Signature-verified webhook event listener | [`docs/screenshots/04_razorpay_webhook_setup.png`](docs/screenshots/04_razorpay_webhook_setup.png) |
+
+---
+
+## 5. Execution Roadmap
 
 - [x] **Pre-Step 1**: Repository initialization, folder structure scaffolding, baseline configuration, environment templates, docs skeleton.
 - [x] **Step 1**: Technical planning, database schema modeling, API contract specification, and role/permission matrix.
@@ -98,7 +130,7 @@ At checkout:
 
 ---
 
-## 5. Local Setup Instructions
+## 6. Installation & Run Steps (Local & Cloud)
 
 ### Prerequisites
 - Node.js (v18+)

@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 export const Navbar = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, loading, logout } = useAuth();
   const { itemCount } = useCart();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -137,7 +137,11 @@ export const Navbar = () => {
             )}
           </Link>
 
-          {isAuthenticated ? (
+          {loading && !user ? (
+            <div className="hidden sm:flex items-center space-x-2">
+              <div className="w-16 h-8 bg-surface-2 animate-pulse rounded-control" />
+            </div>
+          ) : isAuthenticated ? (
             <div className="hidden sm:flex items-center space-x-3 pl-2 border-l border-border">
               <div className="flex flex-col text-right">
                 <span className="text-xs font-bold text-main leading-tight truncate max-w-[120px]">
@@ -256,7 +260,9 @@ export const Navbar = () => {
           </nav>
 
           <div className="pt-4 border-t border-border">
-            {isAuthenticated ? (
+            {loading && !user ? (
+              <div className="w-full h-10 bg-surface-2 animate-pulse rounded-control" />
+            ) : isAuthenticated ? (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
