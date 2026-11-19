@@ -3,7 +3,13 @@
   "version": "1.0.0",
   "description": "Full-stack multi-vendor e-commerce marketplace platform",
   "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
   "scripts": {
+    "dev": "npm run build && node server/src/server.js",
+    "start": "node server/src/server.js",
     "install:server": "npm --prefix server install",
     "install:client": "npm --prefix client install",
     "install:all": "npm --prefix server install && npm --prefix client install",

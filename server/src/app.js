@@ -1,4 +1,7 @@
 import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -7,6 +10,10 @@ import rateLimit from 'express-rate-limit';
 import { config } from './config/environment.js';
 import { ApiResponse } from './utils/apiResponse.js';
 import { errorHandler } from './middleware/errorHandler.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const clientDistPath = path.resolve(__dirname, '../../client/dist');
 
 // Route imports
 import authRoutes from './modules/auth/auth.routes.js';
@@ -25,8 +32,14 @@ const app = express();
 // Trust reverse proxy headers (Vercel / Render) for accurate rate-limiting & IPs
 app.set('trust proxy', 1);
 
-// Security and utility middleware
-app.use(helmet());
+// Security and utility middleware (allow iframe embedding & inline scripts for SPA preview)
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    frameguard: false,
+  })
+);
 // Flexible CORS for Local, Render & Vercel Preview/Production Domains
 const allowedOrigins = [
   config.clientUrl,
@@ -229,7 +242,18 @@ app.use(`${config.apiPrefix}/coupons`, couponRoutes);
 app.use(`${config.apiPrefix}/admin`, adminRoutes);
 app.use(`${config.apiPrefix}/uploads`, uploadRoutes);
 
-// 404 Handler
+// Serve built React SPA from client/dist
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith(config.apiPrefix)) {
+      return next();
+    }
+    return res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+}
+
+// 404 Handler for unmatched API routes
 app.use((req, res) => {
   return ApiResponse.error(res, {
     statusCode: 404,

@@ -8,6 +8,9 @@ let isConnected = false;
  * Get or initialize Elasticsearch client
  */
 export const getElasticClient = () => {
+  if (!process.env.ELASTICSEARCH_NODE) {
+    return null;
+  }
   if (esClient) return esClient;
 
   const clientOptions = {

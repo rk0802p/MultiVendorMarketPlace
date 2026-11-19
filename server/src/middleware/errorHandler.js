@@ -1,6 +1,40 @@
 import { ApiResponse } from '../utils/apiResponse.js';
 
 export const errorHandler = (err, req, res, next) => {
+  // Handle offline MongoDB errors gracefully when database is not connected
+  const isDbOffline =
+    err?.name === 'MongooseError' ||
+    err?.name === 'MongoNetworkError' ||
+    err?.name === 'MongoServerSelectionError' ||
+    err?.message?.includes('buffering timed out') ||
+    err?.message?.includes('before initial connection is complete') ||
+    err?.message?.includes('Client must be connected');
+
+  if (isDbOffline) {
+    console.warn('[AI Studio] Database offline — returning fallback response for', req.method, req.path);
+    if (req.method === 'GET') {
+      if (req.path.includes('/products')) {
+        return ApiResponse.success(res, {
+          message: 'Database offline — returning empty catalogue',
+          data: {
+            products: [],
+            pagination: { page: 1, limit: 12, total: 0, pages: 1 },
+            facets: { categories: [], priceStats: null },
+            source: 'offline-fallback',
+          },
+        });
+      }
+      return ApiResponse.success(res, {
+        message: 'Database offline — returning empty result',
+        data: req.path.endsWith('s') || req.path.endsWith('s/') ? [] : {},
+      });
+    }
+    return ApiResponse.error(res, {
+      statusCode: 503,
+      message: 'Service temporarily unavailable (database offline)',
+    });
+  }
+
   console.error('[Error Details]:', err);
 
   // Mongoose validation error
