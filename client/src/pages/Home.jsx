@@ -11,18 +11,18 @@ export const Home = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
       {/* Monochromatic Hero Section */}
-      <div className="bg-gradient-to-br from-mono-900 via-mono-950 to-mono-900 text-inverse rounded-card p-8 sm:p-14 shadow-lg border border-border/20 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-mono-900 via-mono-950 to-mono-900 text-white rounded-card p-8 sm:p-14 shadow-lg border border-mono-800/80 dark:border-mono-700/60 relative overflow-hidden">
         {/* Subtle geometric background overlay for tactile depth */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-surface/5 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-white/5 via-transparent to-transparent pointer-events-none" />
 
         <div className="relative z-10 max-w-2xl space-y-6">
-          <div className="inline-flex items-center space-x-2 bg-surface/10 text-inverse px-3.5 py-1.5 rounded-pill text-xs font-semibold backdrop-blur-sm border border-surface/20">
+          <div className="inline-flex items-center space-x-2 bg-white/10 text-mono-50 px-3.5 py-1.5 rounded-pill text-xs font-semibold backdrop-blur-sm border border-white/20">
             <span>TechMart Multi-Vendor Platform</span>
             <span className="opacity-60">•</span>
             <span>FS-01 Project</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white">
             One Marketplace. <br />
             <span className="text-mono-300">Multiple Independent Vendors.</span>
           </h1>
@@ -36,14 +36,14 @@ export const Home = () => {
               <>
                 <Link
                   to="/register"
-                  className="px-6 py-3 bg-surface text-main hover:bg-surface-2 rounded-control font-semibold text-sm transition shadow-xs flex items-center space-x-2"
+                  className="px-6 py-3 bg-white text-mono-900 hover:bg-mono-100 rounded-control font-semibold text-sm transition shadow-xs flex items-center space-x-2"
                 >
                   <span>Get Started Now</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
                   to="/login"
-                  className="px-6 py-3 bg-surface/10 hover:bg-surface/20 text-inverse border border-surface/20 rounded-control font-semibold text-sm transition backdrop-blur-sm"
+                  className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-control font-semibold text-sm transition backdrop-blur-sm"
                 >
                   Sign In
                 </Link>
@@ -51,12 +51,12 @@ export const Home = () => {
             ) : (
               <div className="flex flex-wrap items-center gap-3">
                 <span className="text-sm text-mono-300">
-                  Signed in as <strong className="text-inverse capitalize">{user.role}</strong> ({user.name})
+                  Signed in as <strong className="text-white capitalize">{user.role}</strong> ({user.name})
                 </span>
                 {user.role === 'customer' && (
                   <Link
                     to="/customer/dashboard"
-                    className="px-5 py-2.5 bg-surface text-main hover:bg-surface-2 rounded-control text-sm font-semibold transition"
+                    className="px-5 py-2.5 bg-white text-mono-900 hover:bg-mono-100 rounded-control text-sm font-semibold transition"
                   >
                     Go to Customer Portal
                   </Link>
@@ -64,7 +64,7 @@ export const Home = () => {
                 {user.role === 'vendor' && (
                   <Link
                     to="/vendor/dashboard"
-                    className="px-5 py-2.5 bg-surface text-main hover:bg-surface-2 rounded-control text-sm font-semibold transition"
+                    className="px-5 py-2.5 bg-white text-mono-900 hover:bg-mono-100 rounded-control text-sm font-semibold transition"
                   >
                     Go to Vendor Dashboard
                   </Link>
@@ -72,7 +72,7 @@ export const Home = () => {
                 {user.role === 'admin' && (
                   <Link
                     to="/admin/dashboard"
-                    className="px-5 py-2.5 bg-surface text-main hover:bg-surface-2 rounded-control text-sm font-semibold transition"
+                    className="px-5 py-2.5 bg-white text-mono-900 hover:bg-mono-100 rounded-control text-sm font-semibold transition"
                   >
                     Go to Admin Dashboard
                   </Link>
